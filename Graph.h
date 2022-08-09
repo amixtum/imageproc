@@ -39,7 +39,7 @@ template <class KeyCompare>
 Graph<VertexType>::Graph(KeyCompare compare) : adjacencyLists(compare) { }
 
 template <class VertexType>
-Graph<VertexType>::Graph(Graph<VertexType> &copy_from) {
+Graph<VertexType>::Graph(Graph<VertexType> &copy_from) : adjacencyLists(copy_from.key_comp()) {
     for (auto &elem : copy_from.getAdjacencyLists()) {
         this->addVertex(elem.first);
         for (auto &destVertex : elem.second) {
