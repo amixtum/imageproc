@@ -35,7 +35,7 @@ class Graph {
 
         Graph<VertexType> bfs(VertexType &sourceVertex);
 
-        std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> djikstra(VertexType &sourceVertex);
+        std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> djikstraPaths(VertexType &sourceVertex);
     private:
         std::map<VertexType, std::map<VertexType, int>> adjacencyLists;
 };
@@ -136,7 +136,7 @@ Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) {
 }
 
 template <class VertexType>
-std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> Graph<VertexType>::djikstra(VertexType &sourceVertex) {
+std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> Graph<VertexType>::djikstraPaths(VertexType &sourceVertex) {
     std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> paths;
 
     std::map<VertexType, bool> processed(this->adjacencyLists.key_comp());
@@ -157,7 +157,7 @@ std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> Graph<Verte
     processed[sourceVertex] = true;
 
     for (auto &destVertex : this->adjacencyLists[sourceVertex]) {
-        unprocessed.insert(distances[sourceVertex] + this->weight(sourceVertex, destVertex.first), {sourceVertex, destVertex.first});
+        unprocessed.insert(this->weight(sourceVertex, destVertex.first), {sourceVertex, destVertex.first});
     }
     
     while (!unprocessed.empty()) {
