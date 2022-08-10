@@ -11,6 +11,6 @@ enum Neighborhood {
     Neumann
 };
 
-std::vector<cv::Point> neighbors(Neighborhood n, cv::Point center, int leftBound, int rightBound, int upBound, int lowBound);
+std::vector<cv::Point> neighbors(Neighborhood n, cv::Point center, int leftBound, int lowBound, int rightBound, int upBound);
 
 #endif // Neighborhood.h included

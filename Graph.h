@@ -9,19 +9,19 @@
 
 #include "Heap.h"
 
-template <class VertexType>
+
+template <class VertexType, class KeyCompare>
 class Graph {
     public:
-        template <class KeyCompare>
-        Graph(KeyCompare compare);
+        Graph();
 
-        Graph(Graph<VertexType> &copy_from);
+        Graph(Graph<VertexType, KeyCompare> &copy_from);
 
-        void addVertex(VertexType &v);
+        void addVertex(VertexType v);
 
         void removeVertex(VertexType &v);
 
-        void addEdge(VertexType &from, VertexType &to, int weight);
+        void addEdge(const VertexType &from, const VertexType &to, int weight);
 
         void removeEdge(VertexType &from, VertexType &to);
 
@@ -29,23 +29,22 @@ class Graph {
 
         int weight(VertexType &from, VertexType &to);
 
-        std::map<VertexType, std::map<VertexType, int>> & getAdjacencyLists();
+        std::map<VertexType, std::map<VertexType, int, KeyCompare>, KeyCompare> & getAdjacencyLists();
 
-        std::map<VertexType, int> & connectedTo(VertexType &from);
+        std::map<VertexType, int, KeyCompare> & connectedTo(VertexType &from);
 
-        Graph<VertexType> bfs(VertexType &sourceVertex);
+        Graph<VertexType, KeyCompare> bfs(VertexType &sourceVertex) const;
 
-        std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> djikstraPaths(VertexType &sourceVertex);
+        std::map<VertexType, std::vector<VertexType>, KeyCompare> djikstraPaths(VertexType &sourceVertex) const;
     private:
-        std::map<VertexType, std::map<VertexType, int>> adjacencyLists;
+        std::map<VertexType, std::map<VertexType, int, KeyCompare>, KeyCompare> adjacencyLists;
 };
 
-template <class VertexType>
-template <class KeyCompare>
-Graph<VertexType>::Graph(KeyCompare compare) : adjacencyLists(compare) { }
+template <class VertexType, class KeyCompare>
+Graph<VertexType, KeyCompare>::Graph() { }
 
-template <class VertexType>
-Graph<VertexType>::Graph(Graph<VertexType> &copy_from) : adjacencyLists(copy_from.key_comp()) {
+template <class VertexType, class KeyCompare>
+Graph<VertexType, KeyCompare>::Graph(Graph<VertexType, KeyCompare> &copy_from) : adjacencyLists(copy_from.key_comp()) {
     for (auto &elem : copy_from.getAdjacencyLists()) {
         this->addVertex(elem.first);
         for (auto &destVertex : elem.second) {
@@ -54,13 +53,13 @@ Graph<VertexType>::Graph(Graph<VertexType> &copy_from) : adjacencyLists(copy_fro
     }
 }
 
-template <class VertexType>
-void Graph<VertexType>::addVertex(VertexType &v) {
-    this->adjacencyLists.insert({v, std::map<VertexType, int>(this->adjacencyLists.key_comp())});
+template <class VertexType, class KeyCompare>
+void Graph<VertexType, KeyCompare>::addVertex(VertexType v) {
+    this->adjacencyLists.insert({v, std::map<VertexType, int, KeyCompare>()});
 }
 
-template <class VertexType>
-void Graph<VertexType>::removeVertex(VertexType &v) {
+template <class VertexType, class KeyCompare>
+void Graph<VertexType, KeyCompare>::removeVertex(VertexType &v) {
     for (auto &sourceVertex : this->adjacencyLists) {
         auto toRemove = sourceVertex.second.find(v);
         if (toRemove != sourceVertex.second.end()) {
@@ -71,8 +70,8 @@ void Graph<VertexType>::removeVertex(VertexType &v) {
     this->adjacencyLists.erase(v);
 }
 
-template <class VertexType>
-void Graph<VertexType>::addEdge(VertexType &from, VertexType &to, int weight) {
+template <class VertexType, class KeyCompare>
+void Graph<VertexType, KeyCompare>::addEdge(const VertexType &from, const VertexType &to, int weight) {
     auto findTo = this->adjacencyLists[from].find(to);
     if (findTo != this->adjacencyLists[from].end()) {
         this->adjacencyLists[from][to] += weight;
@@ -82,31 +81,31 @@ void Graph<VertexType>::addEdge(VertexType &from, VertexType &to, int weight) {
     }
 }
 
-template <class VertexType>
-void Graph<VertexType>::removeEdge(VertexType &from, VertexType &to) {
+template <class VertexType, class KeyCompare>
+void Graph<VertexType, KeyCompare>::removeEdge(VertexType &from, VertexType &to) {
     this->adjacencyLists[from].erase(to);
 }
 
-template <class VertexType>
-bool Graph<VertexType>::hasEdge(VertexType &from, VertexType &to) {
+template <class VertexType, class KeyCompare>
+bool Graph<VertexType, KeyCompare>::hasEdge(VertexType &from, VertexType &to) {
     return this->adjacencyLists[from].find(to) != this->adjacencyLists[from].end();
 }
 
-template <class VertexType>
-std::map<VertexType, std::map<VertexType, int>> & Graph<VertexType>::getAdjacencyLists() {
-    return &this->adjacencyLists;
+template <class VertexType, class KeyCompare>
+std::map<VertexType, std::map<VertexType, int, KeyCompare>, KeyCompare> & Graph<VertexType, KeyCompare>::getAdjacencyLists() { 
+    return this->adjacencyLists;
 }
 
-template <class VertexType>
-std::map<VertexType, int> & Graph<VertexType>::connectedTo(VertexType &from) {
-    return &this->adjacencyLists[from];
+template <class VertexType, class KeyCompare>
+std::map<VertexType, int, KeyCompare> & Graph<VertexType, KeyCompare>::connectedTo(VertexType &from) {
+    return this->adjacencyLists[from];
 }
 
-template <class VertexType>
-Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) {
+template <class VertexType, class KeyCompare>
+Graph<VertexType, KeyCompare> Graph<VertexType, KeyCompare>::bfs(VertexType &sourceVertex) const {
     std::queue<VertexType> toSearch;
-    std::map<VertexType, bool> visited;
-    Graph<VertexType> connected;
+    std::map<VertexType, bool, KeyCompare> visited;
+    Graph<VertexType, KeyCompare> connected;
 
     for (auto &vertex : this->adjacencyLists) {
         visited.insert({vertex.first, false});
@@ -117,7 +116,8 @@ Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) {
     toSearch.push(sourceVertex);
 
     while (toSearch.size() > 0) {
-        auto vertex = toSearch.pop();
+        auto vertex = toSearch.front();
+        toSearch.pop();
 
         connected.addVertex(vertex);
 
@@ -135,13 +135,13 @@ Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) {
     return connected;
 }
 
-template <class VertexType>
-std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> Graph<VertexType>::djikstraPaths(VertexType &sourceVertex) {
-    std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> paths;
+template <class VertexType, class KeyCompare>
+std::map<VertexType, std::vector<VertexType>, KeyCompare> Graph<VertexType, KeyCompare>::djikstraPaths(VertexType &sourceVertex) const {
+    std::map<VertexType, std::vector<VertexType>, KeyCompare> paths;
 
-    std::map<VertexType, bool> processed(this->adjacencyLists.key_comp());
-    std::map<VertexType, int> key(this->adjacencyLists.key_comp());
-    std::map<std::pair<VertexType, VertexType>, int> distances(this->adjacencyLists.key_comp());
+    std::map<VertexType, bool, KeyCompare> processed;
+    std::map<VertexType, int, KeyCompare> key;
+    std::map<VertexType, int, KeyCompare> distances;
 
     Heap<int, VertexType> unprocessed;
     
@@ -149,12 +149,13 @@ std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> Graph<Verte
         processed.insert({vertex.first, false});
         distances.insert({vertex.first, INT_MAX});
         key.insert({vertex.first, INT_MAX});
-        paths.insert({vertex, std::vector<std::pair<VertexType, VertexType>>()});
+        paths.insert({vertex, std::vector<VertexType>()});
     }
 
     key[sourceVertex] = 0;
     distances[sourceVertex] = 0;
     processed[sourceVertex] = true;
+    paths[sourceVertex].push_back(sourceVertex);
 
     for (auto &destVertex : this->adjacencyLists[sourceVertex]) {
         unprocessed.insert(this->weight(sourceVertex, destVertex.first), {sourceVertex, destVertex.first});
@@ -169,7 +170,7 @@ std::map<VertexType, std::vector<std::pair<VertexType, VertexType>>> Graph<Verte
             for (auto &e : paths[minEdge.first]) {
                 paths[minEdge.second].push_back(e);
             }
-            paths[minEdge.second].push_back({minEdge.first, minEdge.second});
+            paths[minEdge.second].push_back(minEdge.second);
         }
 
         for (auto &destVertex : this->connectedTo(minEdge.second)) {
