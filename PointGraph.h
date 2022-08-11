@@ -17,27 +17,22 @@ class PointGraph {
          * Adds a PointVertex for each entry in fromImage and
          * adds an edge for each neighboring PointVertex
          */
-        PointGraph(cv::Mat &fromImage);
+        PointGraph();
 
         /*
          */
         void paintImage(cv::Mat &canvas);
 
-    private:
-        struct VComp {
-            bool operator()(const PointVertex &l, const PointVertex &r) const {
-                return ((l.point().x + 1) * l.point().y + l.point().x) < ((r.point().x + 1) * r.point().y + r.point().x);
-            }
-        };
+        void addVerticesFromImage(cv::Mat &fromImage);
 
-        struct PComp {
-            bool operator()(const std::pair<int, int> l, const std::pair<int, int> r) const {
-                return ((l.first + 1) * l.second + l.first) < ((r.first + 1) * r.second + r.first);
-            }
-        };
+        void connectAllNeighbors(int width, int height, Neighborhood nbr);
+
+        void connectRandom(int maxEdges);
 
     private:
-        Graph<PointVertex, VComp> pointGraph;
+        Graph<std::shared_ptr<PointVertex>> pointGraph;
+
+        std::map<int, std::map<int, std::shared_ptr<PointVertex>>> pointMap;
 
         cv::Point2i _bottomRight;
 };

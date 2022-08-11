@@ -32,8 +32,18 @@ void applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vector<c
 
 cv::Vec3b remove_replace(std::vector<cv::Vec3b> colors, int channel, int threshold, int replacement);
 
-cv::Vec3b cosInSin(std::vector<cv::Vec3b> colors);
-
 cv::Vec3b avgColor(std::vector<cv::Vec3b> colors);
+
+int compareIntensity(cv::Vec3b l, cv::Vec3b r);
+
+void swapPixels(cv::Mat &image, cv::Point l, cv::Point r);
+
+int partitionRow(cv::Mat &image, std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, int xMin, int xMax, int y);
+
+int partitionCol(cv::Mat &image, std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, int yMin, int yMax, int x);
+
+void quicksortRow(cv::Mat &image, std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, int xMin, int xMax, int y);
+
+void quicksortCol(cv::Mat &image, std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, int yMin, int yMax, int x);
 
 #endif // ImageOps.h included
