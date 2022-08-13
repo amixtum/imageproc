@@ -10,7 +10,6 @@
 
 #include "Heap.h"
 
-
 template <class VertexType>
 class Graph {
     public:
@@ -18,110 +17,132 @@ class Graph {
 
         Graph(Graph<VertexType> &copy_from);
 
-        void addVertex(VertexType v);
+        void clear();
 
-        void removeVertex(VertexType &v);
+        void addVertex(const VertexType &v);
+
+        void removeVertex(const VertexType &v);
 
         void addEdge(const VertexType &from, const VertexType &to, int weight);
 
         void addNewEdge(const VertexType &from, const VertexType &to, int weight);
 
-        void removeEdge(VertexType &from, VertexType &to);
+        void removeEdge(const VertexType &from, const VertexType &to);
 
-        bool hasEdge(VertexType &from, VertexType &to);
+        bool hasEdge(const VertexType &from, const VertexType &to);
 
-        int weight(VertexType &from, VertexType &to);
+        bool hasEdges(const VertexType &from);
+
+        int weight(const VertexType &from, const VertexType &to);
 
         std::map<VertexType, std::map<VertexType, int>> & getAdjacencyLists();
 
-        std::map<VertexType, int> & connectedTo(VertexType &from);
+        std::map<VertexType, int> & connectedTo(const VertexType &from);
 
-        Graph<VertexType> bfs(VertexType &sourceVertex) const;
-
-        std::map<VertexType, std::vector<VertexType>> djikstraPaths(VertexType &sourceVertex) const;
+        Graph<VertexType> bfs(VertexType &sourceVertex);
 
         void contractRandomEdgeNoParallel();
 
-    private:
+        void contractEdgeNoParallel(const std::pair<VertexType, VertexType> edge);
+
         std::pair<VertexType, VertexType> chooseRandomEdge();
+
+        std::pair<VertexType, VertexType> chooseRandomEdge(VertexType &startVertex);
     private:
-        std::map<VertexType, std::map<VertexType, int>> adjacencyLists;
+        std::map<VertexType, std::map<VertexType, int>> _adjacencyLists;
 };
 
 template <class VertexType>
 Graph<VertexType>::Graph() { }
 
 template <class VertexType>
-Graph<VertexType>::Graph(Graph<VertexType> &copy_from) : adjacencyLists(copy_from.key_comp()) {
+Graph<VertexType>::Graph(Graph<VertexType> &copy_from) {
+    _adjacencyLists.clear();
+
     for (auto &elem : copy_from.getAdjacencyLists()) {
-        this->addVertex(elem.first);
+        addVertex(elem.first);
         for (auto &destVertex : elem.second) {
-            this->addEdge(elem.first, destVertex);
+            addNewEdge(elem.first, destVertex.first, destVertex.second);
         }
     }
 }
 
 template <class VertexType>
-void Graph<VertexType>::addVertex(VertexType v) {
-    this->adjacencyLists.insert({v, std::map<VertexType, int>()});
+void Graph<VertexType>::clear() {
+    _adjacencyLists.clear(); 
 }
 
 template <class VertexType>
-void Graph<VertexType>::removeVertex(VertexType &v) {
-    for (auto &sourceVertex : this->adjacencyLists) {
+void Graph<VertexType>::addVertex(const VertexType &v) {
+    _adjacencyLists.insert({v, std::map<VertexType, int>()});
+}
+
+template <class VertexType>
+void Graph<VertexType>::removeVertex(const VertexType &v) {
+    for (auto &sourceVertex : _adjacencyLists) {
         auto toRemove = sourceVertex.second.find(v);
         if (toRemove != sourceVertex.second.end()) {
             sourceVertex.second.erase(toRemove);
         }
     }
 
-    this->adjacencyLists.erase(v);
+    _adjacencyLists.erase(v);
 }
 
 template <class VertexType>
 void Graph<VertexType>::addEdge(const VertexType &from, const VertexType &to, int weight) {
-    auto findTo = this->adjacencyLists[from].find(to);
-    if (findTo != this->adjacencyLists[from].end()) {
-        this->adjacencyLists[from][to] += weight;
+    auto findTo = _adjacencyLists[from].find(to);
+    if (findTo != _adjacencyLists[from].end()) {
+        _adjacencyLists[from][to] += weight;
     }
     else {
-        this->adjacencyLists[from].insert({to, weight});
+        _adjacencyLists[from].insert({to, weight});
     }
 }
 
 template <class VertexType>
 void Graph<VertexType>::addNewEdge(const VertexType &from, const VertexType &to, int weight) {
-    this->adjacencyLists[from].insert({to, weight});
+    _adjacencyLists[from].insert({to, weight});
 }
 
 template <class VertexType>
-void Graph<VertexType>::removeEdge(VertexType &from, VertexType &to) {
-    this->adjacencyLists[from].erase(to);
+void Graph<VertexType>::removeEdge(const VertexType &from, const VertexType &to) {
+    _adjacencyLists[from].erase(to);
 }
 
 template <class VertexType>
-bool Graph<VertexType>::hasEdge(VertexType &from, VertexType &to) {
-    return this->adjacencyLists[from].find(to) != this->adjacencyLists[from].end();
+bool Graph<VertexType>::hasEdge(const VertexType &from, const VertexType &to) {
+    return _adjacencyLists[from].find(to) != _adjacencyLists[from].end();
+}
+
+template <class VertexType>
+bool Graph<VertexType>::hasEdges(const VertexType &from) {
+    return _adjacencyLists[from].size() > 0;
+}
+
+template <class VertexType>
+int Graph<VertexType>::weight(const VertexType &from, const VertexType &to) {
+    return _adjacencyLists[from][to];
 }
 
 template <class VertexType>
 std::map<VertexType, std::map<VertexType, int>> & Graph<VertexType>::getAdjacencyLists() { 
-    return this->adjacencyLists;
+    return _adjacencyLists;
 }
 
 template <class VertexType>
-std::map<VertexType, int> & Graph<VertexType>::connectedTo(VertexType &from) {
-    return this->adjacencyLists[from];
+std::map<VertexType, int> & Graph<VertexType>::connectedTo(const VertexType &from) {
+    return _adjacencyLists[from];
 }
 
 template <class VertexType>
-Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) const {
+Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) {
     std::queue<VertexType> toSearch;
     std::map<VertexType, bool> visited;
     Graph<VertexType> connected;
 
-    for (auto &vertex : this->adjacencyLists) {
-        visited.insert({vertex.first, false});
+    for (auto &vertex : _adjacencyLists) {
+        visited.insert(std::make_pair(vertex.first, false));
     }
 
     visited[sourceVertex] = true;
@@ -134,13 +155,13 @@ Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) const {
 
         connected.addVertex(vertex);
 
-        for (auto &destVertex : this->connectedTo(vertex)) {
-            connected.addEdge(vertex, destVertex.first, this->weight(vertex, destVertex.first));
+        for (auto &destVertex : connectedTo(vertex)) {
+            connected.addNewEdge(vertex, destVertex.first, destVertex.second);
 
-            if (!visited[destVertex]) {
-                visited[destVertex] = true;
+            if (!visited[destVertex.first]) {
+                visited[destVertex.first] = true;
                 
-                toSearch.push(destVertex);
+                toSearch.push(destVertex.first);
             }
         }
     }
@@ -149,81 +170,53 @@ Graph<VertexType> Graph<VertexType>::bfs(VertexType &sourceVertex) const {
 }
 
 template <class VertexType>
-std::map<VertexType, std::vector<VertexType>> Graph<VertexType>::djikstraPaths(VertexType &sourceVertex) const {
-    std::map<VertexType, std::vector<VertexType>> paths;
+void Graph<VertexType>::contractRandomEdgeNoParallel() {
+    auto edge = chooseRandomEdge();
 
-    std::map<VertexType, bool> processed;
-    std::map<VertexType, int> key;
-    std::map<VertexType, int> distances;
-
-    Heap<int, VertexType> unprocessed;
-    
-    for (auto &vertex : this->adjacencyLists) {
-        processed.insert({vertex.first, false});
-        distances.insert({vertex.first, INT_MAX});
-        key.insert({vertex.first, INT_MAX});
-        paths.insert({vertex, std::vector<VertexType>()});
-    }
-
-    key[sourceVertex] = 0;
-    distances[sourceVertex] = 0;
-    processed[sourceVertex] = true;
-    paths[sourceVertex].push_back(sourceVertex);
-
-    for (auto &destVertex : this->adjacencyLists[sourceVertex]) {
-        unprocessed.insert(this->weight(sourceVertex, destVertex.first), {sourceVertex, destVertex.first});
-    }
-    
-    while (!unprocessed.empty()) {
-        auto minEdge = unprocessed.extractMin();
-        processed[minEdge.second] = true;
-        distances[minEdge.second] = key[minEdge.first] + this->weight(minEdge.first, minEdge.second);
-        if (distances[minEdge.second] < key[minEdge.second]) {
-            key[minEdge.second] = distances[minEdge.second];
-            for (auto &e : paths[minEdge.first]) {
-                paths[minEdge.second].push_back(e);
-            }
-            paths[minEdge.second].push_back(minEdge.second);
+    for (auto &destVertex : _adjacencyLists[edge.second]) {
+        if (_adjacencyLists[edge.first].find(destVertex.first) == _adjacencyLists[edge.first].end()) {
+            addNewEdge(edge.first, destVertex.first, weight(edge.first, edge.second) + weight(edge.second, destVertex.first));
         }
 
-        for (auto &destVertex : this->connectedTo(minEdge.second)) {
-            if (!processed[destVertex.first]) {
-                distances[destVertex.first] = key[minEdge.second] + this->weight(minEdge.second, destVertex.first);
-                if (distances[destVertex.first] < key[destVertex.first]) {
-                    key[destVertex.first] = distances[destVertex.first];
-                }
-                unprocessed.insert(distances[destVertex.first], {minEdge.second, destVertex.first});
+        removeEdge(edge.second, destVertex.first);
+    }
+
+    for (auto &sourceVertex : _adjacencyLists) {
+        auto it = _adjacencyLists[sourceVertex.first].find(edge.second);
+        if (it != _adjacencyLists[sourceVertex.first].end()) {
+            if (_adjacencyLists[sourceVertex.first].find(edge.first) != _adjacencyLists[sourceVertex.first].end()) {
+                addNewEdge(sourceVertex.first, edge.first, weight(sourceVertex.first, edge.second));
             }
+
+            removeEdge(sourceVertex.first, edge.second);
         }
     }
 
-    return paths;
+    removeVertex(edge.second);
 }
 
 template <class VertexType>
-void Graph<VertexType>::contractRandomEdgeNoParallel() {
-    auto edge = this->chooseRandomEdge();
-
-    for (auto &destVertex : this->adjacencyLists[edge.second]) {
-        if (this->adjacencyLists[edge.first].find(destVertex.first) == this->adjacencyLists[edge.first].end()) {
-            this->addNewEdge(edge.first, destVertex.first, this->weight(edge.first, edge.second) + this->weight(edge.second, destVertex.first));
+void Graph<VertexType>::contractEdgeNoParallel(const std::pair<VertexType, VertexType> edge) {
+    for (auto &destVertex : _adjacencyLists[edge.second]) {
+        if (_adjacencyLists[edge.first].find(destVertex.first) == _adjacencyLists[edge.first].end()) {
+            addNewEdge(edge.first, destVertex.first, weight(edge.first, edge.second) + weight(edge.second, destVertex.first));
         }
 
-        this->removeEdge(edge.second, destVertex.first);
+        removeEdge(edge.second, destVertex.first);
     }
 
-    for (auto &sourceVertex : this->adjacencyLists) {
-        auto it = this->adjacencyLists[sourceVertex.first].find(edge.second);
-        if (it != this->adjacencyLists[sourceVertex.first].end()) {
-            if (this->adjacencyLists[sourceVertex.first].find(edge.first) != this->adjacencyLists[sourceVertex.first].end()) {
-                this->addNewEdge(sourceVertex.first, edge.first, this->weight(sourceVertex.first, edge.second));
+    for (auto &sourceVertex : _adjacencyLists) {
+        auto it = _adjacencyLists[sourceVertex.first].find(edge.second);
+        if (it != _adjacencyLists[sourceVertex.first].end()) {
+            if (_adjacencyLists[sourceVertex.first].find(edge.first) != _adjacencyLists[sourceVertex.first].end()) {
+                addNewEdge(sourceVertex.first, edge.first, weight(sourceVertex.first, edge.second));
             }
 
-            this->removeEdge(sourceVertex.first, edge.second);
+            removeEdge(sourceVertex.first, edge.second);
         }
     }
 
-    this->removeVertex(edge.second);
+    removeVertex(edge.second);
 }
 
 template <class VertexType>
@@ -231,14 +224,14 @@ std::pair<VertexType, VertexType> Graph<VertexType>::chooseRandomEdge() {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    auto vIt = this->getAdjacencyLists().begin(); 
-    std::forward(vIt, gen() % this->getAdjacencyLists().size());
+    auto vIt = getAdjacencyLists().begin(); 
+    std::forward(vIt, gen() % getAdjacencyLists().size());
     auto startVertex = vIt->first;
 
     auto eIt = vIt->second.begin();
     while (eIt != vIt->second.end()) {
-        vIt = this->getAdjacencyLists().begin();
-        std::forward(vIt, gen() % this->getAdjacencyLists().size());
+        vIt = getAdjacencyLists().begin();
+        std::forward(vIt, gen() % getAdjacencyLists().size());
         startVertex = vIt->first;
         eIt = vIt->second.begin();
     }
@@ -246,7 +239,20 @@ std::pair<VertexType, VertexType> Graph<VertexType>::chooseRandomEdge() {
     std::forward(eIt, gen() % vIt->second.size());
     auto endVertex = eIt->first;
 
-    return std::pair<VertexType, VertexType>({startVertex, endVertex});
+    return std::make_pair(startVertex, endVertex);
+}
+
+template <class VertexType>
+std::pair<VertexType, VertexType> Graph<VertexType>::chooseRandomEdge(VertexType &startVertex) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    auto eIt = _adjacencyLists[startVertex].begin();
+
+    std::forward(eIt, gen() % _adjacencyLists[startVertex].size());
+    auto endVertex = eIt->first;
+
+    return std::make_pair(startVertex, endVertex);
 }
 
 #endif // Graph.h included

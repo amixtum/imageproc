@@ -3,10 +3,13 @@
 
 #include <vector>
 #include <cmath>
+#include <climits>
 
 template <class K, class T>
 class Heap {
     public:
+        Heap();
+
         void insert(K key, T item);
 
         T extractMin();
@@ -28,24 +31,28 @@ class Heap {
 };
 
 template <class K, class T>
+Heap<K, T>::Heap() {
+    this->heap.push_back({INT_MAX, T()});
+}
+
+template <class K, class T>
 void Heap<K, T>::insert(K key, T item) { 
     this->heap.push_back({key, item});
     auto itemIndex = this->heap.size() - 1;
 
-    if (itemIndex > 0) {
-        while (heap[itemIndex].first < heap[parent(itemIndex)].first) {
-            this->swap(itemIndex, parent(itemIndex));
-            itemIndex = parent(itemIndex);
-        }
+    while (itemIndex > 1 && heap[itemIndex].first < heap[parent(itemIndex)].first) {
+        this->swap(itemIndex, parent(itemIndex));
+        itemIndex = parent(itemIndex);
     }
 }
 
 template <class K, class T>
 T Heap<K, T>::extractMin() {
-    auto minimum = this->heap[0].second;
-    this->heap[0] = this->heap.pop_back();
+    auto minimum = this->heap[1].second;
+    this->heap[1] = this->heap[this->heap.size() - 1];
+    this->heap.pop_back();
 
-    auto outerIndex = 0;
+    auto outerIndex = 1;
     auto innerIndex = 0;
     auto isHeap = false;
 
@@ -73,7 +80,7 @@ T Heap<K, T>::extractMin() {
 
 template <class K, class T>
 void Heap<K, T>::heapify() {
-    for (auto index = std::floor(this->heap.size() / 2); index >= 0; index -= 1) {
+    for (auto index = std::floor(this->heap.size() / 2); index > 0; index -= 1) {
         auto outerIndex = index;
         auto innerIndex = index;
         auto isHeap = false;
@@ -106,17 +113,17 @@ bool Heap<K, T>::empty() {
 
 template <class K, class T>
 int Heap<K, T>::parent(int index) {
-    return std::floor(((index + 1) / 2) - 1);
+    return std::floor(((index) / 2));
 }
 
 template <class K, class T>
 int Heap<K, T>::leftChild(int index) {
-    return ((index + 1) * 2) - 1;
+    return ((index) * 2);
 }
 
 template <class K, class T>
 int Heap<K, T>::rightChild(int index) {
-    return (index + 1) * 2;
+    return (index) * 2 + 1;
 }
 
 template <class K, class T>

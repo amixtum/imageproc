@@ -10,17 +10,14 @@
 #include "Graph.h"
 #include "PointVertex.h"
 #include "Neighborhood.h"
+#include "UnionFind.h"
+
+using Vertex = std::shared_ptr<PointVertex>;
 
 class PointGraph {
     public:
-        /*
-         * Adds a PointVertex for each entry in fromImage and
-         * adds an edge for each neighboring PointVertex
-         */
         PointGraph();
 
-        /*
-         */
         void paintImage(cv::Mat &canvas);
 
         void addVerticesFromImage(cv::Mat &fromImage);
@@ -29,10 +26,23 @@ class PointGraph {
 
         void connectRandom(int maxEdges);
 
-    private:
-        Graph<std::shared_ptr<PointVertex>> pointGraph;
+        void unionChunk(int x, int y, int depth, Neighborhood n);
 
-        std::map<int, std::map<int, std::shared_ptr<PointVertex>>> pointMap;
+        void unionChunks(Neighborhood nbr, float vP);
+
+        std::map<Vertex, Vertex> djikstraPaths(int x, int y);
+
+        std::map<Vertex, int> djikstraKey(int x, int y);
+
+        Graph<Vertex> bfs(int x, int y);
+
+
+    private:
+        Graph<Vertex> _pointGraph;
+
+        std::map<int, std::map<int, Vertex>> _pointMap;
+
+        UnionFind<Vertex> _unionFind;
 
         cv::Point2i _bottomRight;
 };

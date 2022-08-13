@@ -12,6 +12,6 @@ find_package(OpenCV REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-add_executable(DisplayImage Neighborhood.cpp PointVertex.cpp PointGraph.cpp ImageOps.cpp DisplayImage.cpp)
+add_executable(DisplayImage DisplayImage.cpp Neighborhood.cpp ImageOps.cpp PointVertex.cpp PointGraph.cpp Graph.cpp)
 
 target_link_libraries(DisplayImage ${OpenCV_LIBS})
