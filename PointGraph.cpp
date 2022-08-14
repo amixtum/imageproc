@@ -16,19 +16,27 @@ void PointGraph::paintImage(cv::Mat &canvas) {
         return;
     }
 
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+
     std::queue<Vertex> toSearch;
     std::map<Vertex, bool> visited;
+        
+    auto it = _pointGraph.getAdjacencyLists().begin();
+    std::advance(it, gen() % _pointGraph.getAdjacencyLists().size());
+    auto srcVertex = it->first;
+    auto key = djikstraKey(srcVertex->x(), srcVertex->y());
+    int maxDistance = 0;
     
     for (auto &vertex : _pointGraph.getAdjacencyLists()) {
         visited.insert({vertex.first, false});
+
+        if (key[vertex.first] > maxDistance) {
+            maxDistance = key[vertex.first];
+        }
     }
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    
-    auto it = visited.begin();
-    std::advance(it, gen() % visited.size());
-    auto srcVertex = it->first;
     visited[srcVertex] = true;
     toSearch.push(srcVertex);
 
@@ -42,13 +50,19 @@ void PointGraph::paintImage(cv::Mat &canvas) {
     while (!toSearch.empty()) {
         auto searchVertex = toSearch.front();
         auto colorVertex = _unionFind.find(searchVertex);
+        auto distance = key[colorVertex];
+        auto color = 
+            colorVertex->color() + colorVertex->color() * 
+            (std::sin((M_PI * 2 * distance) / maxDistance + 
+                     ((float)distance / maxDistance) 
+                     * std::cos((M_PI * 2 * distance) / maxDistance)) + 1);
         toSearch.pop();
 
         cv::circle(
                 canvas, 
                 searchVertex->point(), 
                 0, 
-                colorVertex->color()
+                color 
         );
 
         for (auto &destVertex : _pointGraph.connectedTo(searchVertex)) {
