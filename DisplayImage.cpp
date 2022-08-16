@@ -128,7 +128,7 @@ void testOptions(cv::Mat &image, char ** argv) {
                 blank = cv::Mat::zeros(1, 1, CV_8UC3);
                 break;
             case 'f':
-                applyColorFnRange(image, colorFn, Neighborhood::Neumann, cv::Point(0, 0), cv::Point(image.size().width, image.size().height));
+                applyColorFn(image, colorFn, Neighborhood::Neumann);
                 break;
             case 'r':
                 applyColorFnRecursive(image, colorFn, Neighborhood::Neumann, true);

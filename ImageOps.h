@@ -27,13 +27,13 @@ namespace gp {
 
     void applyColorFn(
             cv::Mat &image, 
-            std::function<cv::Vec3b(std::vector<cv::Vec3b>)> colorFn, 
+            std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, 
             Neighborhood nbr
     );
 
     void applyColorFnRange(
             cv::Mat &image, 
-            std::function<cv::Vec3b(std::vector<cv::Vec3b>)> colorFn, 
+            std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, 
             Neighborhood nbr, 
             cv::Point topLeft, 
             cv::Point bottomRight
@@ -41,19 +41,21 @@ namespace gp {
 
     void applyColorFnRecursive(
             cv::Mat &image, 
-            std::function<cv::Vec3b(std::vector<cv::Vec3b>)> colorFn, 
+            std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, 
             Neighborhood nbr, 
             bool shouldApply
     );
 
     cv::Vec3b remove_replace(
-            std::vector<cv::Vec3b> colors, 
+            std::vector<cv::Vec3b> &colors, 
             int channel, 
             int threshold, 
             int replacement
     );
+    
+    cv::Vec3b avgColor(std::vector<cv::Vec3b> &colors);
 
-    cv::Vec3b avgColor(std::vector<cv::Vec3b> colors);
+    cv::Vec3b spherical(std::vector<cv::Vec3b> &colors);
 
     int compareIntensity(cv::Vec3b l, cv::Vec3b r);
 

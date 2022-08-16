@@ -52,11 +52,18 @@ void PointGraph::paintImage(cv::Mat &canvas) {
         auto colorVertex = _unionFind.find(searchVertex);
         auto distance = key[colorVertex];
         auto color = 
-            colorVertex->color() + colorVertex->color() * 
+            colorVertex->color() + (colorVertex->color() * 
             (std::sin((M_PI * 2 * distance) / maxDistance + 
                      ((float)distance / maxDistance) 
-                     * std::cos((M_PI * 2 * distance) / maxDistance)) + 1);
+                     * std::cos((M_PI * 2 * distance) / maxDistance)) + 1)) / ((static_cast<float>(colorVertex->color()[0]) / 255) + 1.f);
         toSearch.pop();
+
+        cv::circle(
+                canvas, 
+                searchVertex->point(), 
+                0, 
+                cv::Vec3b(0, 0, 0)
+        );
 
         cv::circle(
                 canvas, 

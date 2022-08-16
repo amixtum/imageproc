@@ -60,13 +60,13 @@ void gp::glueVertical(cv::Mat &left, cv::Mat &right, cv::Mat &glued) {
 std::array<cv::Mat, 4> gp::splitQuadrantsClone(cv::Mat &split) {
     std::array<cv::Mat, 4> quadrants;
 
-    int midX = std::ceil(split.size().width / 2);
-    int midY = std::ceil(split.size().height / 2);
+    int midX = std::floor(static_cast<float>(split.size().width) / 2.f);
+    int midY = std::floor(static_cast<float>(split.size().height) / 2.f);
 
     auto topLeft = cv::Rect(0, 0, midX, midY);
-    auto topRight = cv::Rect(midX, 0, midX, midY);
-    auto bottomLeft = cv::Rect(0, midY, midX, midY);
-    auto bottomRight = cv::Rect(midX, midY, midX, midY);
+    auto topRight = cv::Rect(midX, 0, split.size().width - midX, midY);
+    auto bottomLeft = cv::Rect(0, midY, midX, split.size().height - midY);
+    auto bottomRight = cv::Rect(midX, midY, split.size().width - midX, split.size().height - midY);
 
     quadrants[0] = split(topLeft).clone();
     quadrants[1] = split(topRight).clone();
@@ -79,13 +79,13 @@ std::array<cv::Mat, 4> gp::splitQuadrantsClone(cv::Mat &split) {
 std::array<cv::Mat, 4> gp::splitQuadrantsRef(cv::Mat &split) {
     std::array<cv::Mat, 4> quadrants;
 
-    int midX = std::ceil(split.size().width / 2);
-    int midY = std::ceil(split.size().height / 2);
+    int midX = std::floor(static_cast<float>(split.size().width) / 2.f);
+    int midY = std::floor(static_cast<float>(split.size().height) / 2.f);
 
     auto topLeft = cv::Rect(0, 0, midX, midY);
-    auto topRight = cv::Rect(midX, 0, midX, midY);
-    auto bottomLeft = cv::Rect(0, midY, midX, midY);
-    auto bottomRight = cv::Rect(midX, midY, midX, midY);
+    auto topRight = cv::Rect(midX, 0, split.size().width - midX, midY);
+    auto bottomLeft = cv::Rect(0, midY, midX, split.size().height - midY);
+    auto bottomRight = cv::Rect(midX, midY, split.size().width - midX, split.size().height - midY);
 
     quadrants[0] = split(topLeft);
     quadrants[1] = split(topRight);
@@ -95,7 +95,7 @@ std::array<cv::Mat, 4> gp::splitQuadrantsRef(cv::Mat &split) {
     return quadrants;
 }
 
-void gp::applyColorFn(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>)> colorFn, Neighborhood nbr) {
+void gp::applyColorFn(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr) {
     for (int x = 0; x < image.size().width; x += 1) {
         for (int y = 0; y < image.size().height; y += 1) {
             auto center = cv::Point(x, y);
@@ -105,12 +105,13 @@ void gp::applyColorFn(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Ve
                 colors.push_back(image.at<cv::Vec3b>(neighbor.y, neighbor.x));
             }
 
+            cv::circle(image, center, 0, cv::Vec3b(0, 0, 0));
             cv::circle(image, center, 0, colorFn(colors));
         }
     }
 }
 
-void gp::applyColorFnRange(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>)> colorFn, Neighborhood nbr, cv::Point topLeft, cv::Point bottomRight) {
+void gp::applyColorFnRange(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr, cv::Point topLeft, cv::Point bottomRight) {
     if (topLeft.x < 0 || topLeft.y < 0 || 
         topLeft.x >= image.size().width || 
         topLeft.y >= image.size().height || 
@@ -129,13 +130,14 @@ void gp::applyColorFnRange(cv::Mat &image, std::function<cv::Vec3b(std::vector<c
                 colors.push_back(image.at<cv::Vec3b>(neighbor));
             }
 
+            cv::circle(image, center, 0, cv::Vec3b(0, 0, 0));
             cv::circle(image, center, 0, colorFn(colors));
         }
     }
 }
 
-void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>)> colorFn, Neighborhood nbr, bool shouldApply) {
-    if (image.size().width < 2 || image.size().height < 2) {
+void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr, bool shouldApply) {
+    if (image.size().width <= 2 || image.size().height <= 2) {
         applyColorFn(image, colorFn, nbr);
         return;
     }
@@ -143,84 +145,75 @@ void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vect
     auto quadrants = splitQuadrantsRef(image);
 
     if (shouldApply) {
-        applyColorFnRecursive(quadrants[1], colorFn, nbr, false);
-        applyColorFnRecursive(quadrants[2], colorFn, nbr, false);
-
-        applyColorFnRange(
-                quadrants[0], 
-                colorFn, 
-                nbr, 
-                cv::Point(0, 0), 
-                cv::Point(quadrants[0].size().width, 
-                          quadrants[0].size().height)
-        );
-
-        applyColorFnRange(
-                quadrants[3], 
-                colorFn, 
-                nbr, 
-                cv::Point(0, 0), 
-                cv::Point(quadrants[3].size().width, 
-                          quadrants[3].size().height)
-        );
+        applyColorFn(quadrants[0], colorFn, nbr);
     }
-    
 
-    else {
-        applyColorFnRecursive(quadrants[0], colorFn, nbr, true);
-        applyColorFnRecursive(quadrants[3], colorFn, nbr, true);
-
-        applyColorFnRange(
-                quadrants[1], 
-                colorFn, 
-                nbr, 
-                cv::Point(0, 0), 
-                cv::Point(quadrants[1].size().width, 
-                          quadrants[1].size().height)
-        );
-        applyColorFnRange(
-                quadrants[2], 
-                colorFn, 
-                nbr, 
-                cv::Point(0, 0), 
-                cv::Point(quadrants[2].size().width, 
-                          quadrants[2].size().height)
-        );
-    }
+    applyColorFnRecursive(quadrants[0], colorFn, nbr, !shouldApply);
+    applyColorFnRecursive(quadrants[1], colorFn, nbr, !shouldApply);
+    applyColorFnRecursive(quadrants[2], colorFn, nbr, !shouldApply);
+    applyColorFnRecursive(quadrants[3], colorFn, nbr, !shouldApply);
 }
 
-cv::Vec3b gp::remove_replace(std::vector<cv::Vec3b> colors, int channel, int threshold, int replacement) {
+cv::Vec3b gp::remove_replace(
+        std::vector<cv::Vec3b> &colors, 
+        int channel, 
+        int threshold, 
+        int replacement
+) {
+    auto toAdd = static_cast<unsigned char>(
+            static_cast<float>(replacement) * 
+            (static_cast<float>(replacement) / threshold)
+    );
+
     auto avg = avgColor(colors);
-        auto toAdd = static_cast<unsigned char>(static_cast<float>(replacement) * (static_cast<float>(replacement) / threshold));
+    auto selected = colors[0];
+    for (auto &color : colors) {
+        if (color[channel] > selected[channel]) {
+            selected = (color + selected) / 2;
+        }
+    }
 
-    if (avg[channel] >= threshold) {
+
+    if (selected[channel] >= threshold) {
         switch (channel) {
         case 0:
-            return cv::Vec3b(0, avg[1], avg[2] - toAdd);
+            return cv::Vec3b(0, selected[1], selected[2] + toAdd);
         case 1:
-            return cv::Vec3b(avg[0] - toAdd, 0, avg[2]);
+            return cv::Vec3b(selected[0] + toAdd, 0, selected[2]);
         case 2:
-            return cv::Vec3b(avg[0], avg[1] - toAdd, 0);
+            return cv::Vec3b(selected[0], selected[1] + toAdd, 0);
         default:
-            return avg;
+            return selected;
         }
     }
 
     else {
         switch (channel) {
         case 0:
-            return cv::Vec3b(avg[0] + replacement, avg[1], avg[2] + toAdd);
+            return cv::Vec3b(
+                    (selected[0] + avg[0]) / 2 + replacement, 
+                    selected[1], 
+                    selected[2] + toAdd
+            );
         case 1:
-            return cv::Vec3b(avg[0] + toAdd, avg[1] + replacement, avg[2]);
+            return cv::Vec3b(
+                    selected[0] + toAdd, 
+                    (selected[1] + avg[1]) / 2 + replacement, 
+                    selected[2]
+            );
         case 2:
-            return cv::Vec3b(avg[0], avg[1] + toAdd, avg[2] + replacement);
+            return cv::Vec3b(
+                    selected[0], 
+                    selected[1] + toAdd, 
+                    (selected[2] + avg[2]) / 2 + replacement
+            );
         default:
-            return avg;
+            return selected;
         }
     }
 }
 
-cv::Vec3b gp::avgColor(std::vector<cv::Vec3b> colors) {
+cv::Vec3b gp::avgColor(std::vector<cv::Vec3b> &colors) {
     auto color = cv::Vec3b::zeros();
 
     for (auto &c : colors){
@@ -228,6 +221,33 @@ cv::Vec3b gp::avgColor(std::vector<cv::Vec3b> colors) {
     }
 
     color /= static_cast<float>(colors.size());
+
+    return color;
+}
+
+cv::Vec3b gp::spherical(std::vector<cv::Vec3b> &colors) {
+    auto color = gp::avgColor(colors);
+
+    color[0] = static_cast<unsigned char>(
+        static_cast<float>(color[0]) * 
+        (std::sin((M_PI * 2.f * color[0]) / 255.f) 
+         + (static_cast<float>(color[0]) / 255.f) 
+            * std::cos((M_PI * 2.f * color[2]) / 255.f))
+    );
+    
+    color[1] = static_cast<unsigned char>(
+        static_cast<float>(color[1]) * 
+        (std::sin((M_PI * 2.f * color[1]) / 255.f) 
+         + (static_cast<float>(color[1]) / 255.f) 
+                * std::cos((M_PI * 2.f * color[1]) / 255.f))
+    );
+
+    color[2] = static_cast<unsigned char>(
+        static_cast<float>(color[2]) * 
+        (std::sin((M_PI * 2.f * color[2]) / 255.f) 
+         + (static_cast<float>(color[2]) / 255.f) 
+                * std::cos((M_PI * 2.f * color[0]) / 255.f))
+    );
 
     return color;
 }
@@ -250,7 +270,10 @@ int gp::compareIntensity(cv::Vec3b l, cv::Vec3b r) {
 
 void gp::swapPixels(cv::Mat &image, cv::Point l, cv::Point r) {
     auto temp = image.at<cv::Vec3b>(l);
+    cv::circle(image, l, 0, cv::Vec3b(0, 0, 0));
     cv::circle(image, l, 0, image.at<cv::Vec3b>(r));
+
+    cv::circle(image, r, 0, cv::Vec3b(0, 0, 0));
     cv::circle(image, r, 0, temp);
 }
 
