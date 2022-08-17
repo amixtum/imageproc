@@ -214,7 +214,7 @@ cv::Vec3b gp::remove_replace(
 }
 
 cv::Vec3b gp::avgColor(std::vector<cv::Vec3b> &colors) {
-    auto color = cv::Vec3b::zeros();
+    auto color = cv::Vec3b(0, 0, 0);
 
     for (auto &c : colors){
         color += c;
