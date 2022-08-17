@@ -104,6 +104,7 @@ void gp::applyColorFn(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Ve
             for (auto &neighbor : neighborhood) {
                 colors.push_back(image.at<cv::Vec3b>(neighbor.y, neighbor.x));
             }
+            colors.push_back(image.at<cv::Vec3b>(center));
 
             cv::circle(image, center, 0, cv::Vec3b(0, 0, 0));
             cv::circle(image, center, 0, colorFn(colors));
@@ -129,6 +130,7 @@ void gp::applyColorFnRange(cv::Mat &image, std::function<cv::Vec3b(std::vector<c
             for (auto &neighbor : neighborhood) {
                 colors.push_back(image.at<cv::Vec3b>(neighbor));
             }
+            colors.push_back(image.at<cv::Vec3b>(center));
 
             cv::circle(image, center, 0, cv::Vec3b(0, 0, 0));
             cv::circle(image, center, 0, colorFn(colors));
@@ -136,7 +138,7 @@ void gp::applyColorFnRange(cv::Mat &image, std::function<cv::Vec3b(std::vector<c
     }
 }
 
-void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr, bool shouldApply) {
+void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr, bool flip1, bool flip2) {
     if (image.size().width <= 2 || image.size().height <= 2) {
         applyColorFn(image, colorFn, nbr);
         return;
@@ -144,14 +146,29 @@ void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vect
 
     auto quadrants = splitQuadrantsRef(image);
 
-    if (shouldApply) {
+    if (flip1) {
         applyColorFn(quadrants[0], colorFn, nbr);
     }
 
-    applyColorFnRecursive(quadrants[0], colorFn, nbr, !shouldApply);
-    applyColorFnRecursive(quadrants[1], colorFn, nbr, !shouldApply);
-    applyColorFnRecursive(quadrants[2], colorFn, nbr, !shouldApply);
-    applyColorFnRecursive(quadrants[3], colorFn, nbr, !shouldApply);
+    else {
+        applyColorFn(quadrants[3], colorFn, nbr);
+    }
+
+    if (flip2) {
+        applyColorFn(quadrants[1], colorFn, nbr);
+    }
+
+    else {
+        applyColorFn(quadrants[2], colorFn, nbr);
+    }
+
+    applyColorFnRecursive(quadrants[0], colorFn, nbr, !flip1, !flip2);
+
+    applyColorFnRecursive(quadrants[1], colorFn, nbr, !flip1, !flip2);
+
+    applyColorFnRecursive(quadrants[2], colorFn, nbr, !flip1, !flip2);
+
+    applyColorFnRecursive(quadrants[3], colorFn, nbr, !flip1, !flip2);
 }
 
 cv::Vec3b gp::remove_replace(
@@ -177,11 +194,11 @@ cv::Vec3b gp::remove_replace(
     if (selected[channel] >= threshold) {
         switch (channel) {
         case 0:
-            return cv::Vec3b(0, selected[1], selected[2] + toAdd);
+            return cv::Vec3b(0, selected[1], avg[2] - toAdd);
         case 1:
-            return cv::Vec3b(selected[0] + toAdd, 0, selected[2]);
+            return cv::Vec3b(avg[0] - toAdd, 0, selected[2]);
         case 2:
-            return cv::Vec3b(selected[0], selected[1] + toAdd, 0);
+            return cv::Vec3b(selected[0], avg[1] - toAdd, 0);
         default:
             return selected;
         }
@@ -191,21 +208,21 @@ cv::Vec3b gp::remove_replace(
         switch (channel) {
         case 0:
             return cv::Vec3b(
-                    (selected[0] + avg[0]) / 2 + replacement, 
+                    (selected[0] + avg[0]) / 2 + toAdd, 
                     selected[1], 
-                    selected[2] + toAdd
+                    selected[2] - toAdd
             );
         case 1:
             return cv::Vec3b(
-                    selected[0] + toAdd, 
-                    (selected[1] + avg[1]) / 2 + replacement, 
+                    selected[0] - toAdd, 
+                    (selected[1] + avg[1]) / 2 + toAdd, 
                     selected[2]
             );
         case 2:
             return cv::Vec3b(
                     selected[0], 
-                    selected[1] + toAdd, 
-                    (selected[2] + avg[2]) / 2 + replacement
+                    selected[1] - toAdd, 
+                    (selected[2] + avg[2]) / 2 + toAdd 
             );
         default:
             return selected;

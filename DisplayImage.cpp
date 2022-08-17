@@ -63,7 +63,7 @@ void testGraph(cv::Mat &image1, cv::Mat &image2, int connectRandom, float vP) {
     //g.connectRandom(connectRandom);
     //
     std::cout << "Performing unions\n";
-    g.unionChunks(Neighborhood::Neumann, vP);
+    g.unionChunks(Neighborhood::Moore, vP);
 
     std::cout << "Painting image\n";
     g.paintImage(image2);
@@ -120,7 +120,7 @@ void testOptions(cv::Mat &image, char ** argv) {
                 testPartition(image);
                 break;
             case 's':
-                testQuicksort(image);
+                cv::imwrite("img/output.jpg", image);
                 break;
             case 'g':
                 testGraph(image, blank, atoi(argv[2]), atof(argv[3]));
@@ -128,10 +128,10 @@ void testOptions(cv::Mat &image, char ** argv) {
                 blank = cv::Mat::zeros(1, 1, CV_8UC3);
                 break;
             case 'f':
-                applyColorFn(image, colorFn, Neighborhood::Neumann);
+                applyColorFn(image, colorFn, Neighborhood::Moore);
                 break;
             case 'r':
-                applyColorFnRecursive(image, colorFn, Neighborhood::Neumann, true);
+                applyColorFnRecursive(image, colorFn, Neighborhood::Moore, true, false);
                 break;
             case 'm':
                 std::cout << "color channel: ";
