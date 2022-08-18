@@ -174,7 +174,8 @@ void Graph<VertexType>::contractRandomEdgeNoParallel() {
     auto edge = chooseRandomEdge();
 
     for (auto &destVertex : _adjacencyLists[edge.second]) {
-        if (_adjacencyLists[edge.first].find(destVertex.first) == _adjacencyLists[edge.first].end()) {
+        auto edgeList = _adjacencyLists[edge.first];
+        if (edgeList.find(destVertex.first) == edgeList.end()) {
             addNewEdge(edge.first, destVertex.first, weight(edge.first, edge.second) + weight(edge.second, destVertex.first));
         }
 

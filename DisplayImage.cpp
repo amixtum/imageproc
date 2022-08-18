@@ -99,8 +99,12 @@ void testOptions(cv::Mat &image, char ** argv) {
     std::cout << "channel replacement: ";
     std::cin >> replacement;
 
-    std::function<cv::Vec3b(std::vector<cv::Vec3b>)> colorFn = [&] (std::vector<cv::Vec3b> colors) {
-        return remove_replace(colors, channel, threshold, replacement);
+    std::function<cv::Vec3b(std::vector<cv::Vec3b>)> minColorFn = [&] (std::vector<cv::Vec3b> colors) {
+        return remove_replace_min(colors, channel, threshold, replacement);
+    };
+
+    std::function<cv::Vec3b(std::vector<cv::Vec3b>)> maxColorFn = [&] (std::vector<cv::Vec3b> colors) {
+        return remove_replace_max(colors, channel, threshold, replacement);
     };
 
     cv::namedWindow("Display Image", cv::WINDOW_AUTOSIZE);
@@ -128,10 +132,16 @@ void testOptions(cv::Mat &image, char ** argv) {
                 blank = cv::Mat::zeros(1, 1, CV_8UC3);
                 break;
             case 'f':
-                applyColorFn(image, colorFn, Neighborhood::Moore);
+                applyColorFn(image, minColorFn, Neighborhood::Moore);
+                break;
+            case 'F':
+                applyColorFn(image, maxColorFn, Neighborhood::Moore);
                 break;
             case 'r':
-                applyColorFnRecursive(image, colorFn, Neighborhood::Moore, true, false);
+                applyColorFnRecursive(image, minColorFn, Neighborhood::Moore, true, false);
+                break;
+            case 'R':
+                applyColorFnRecursive(image, maxColorFn, Neighborhood::Moore, true, false);
                 break;
             case 'm':
                 std::cout << "color channel: ";
@@ -143,9 +153,13 @@ void testOptions(cv::Mat &image, char ** argv) {
                 std::cout << "channel replacement: ";
                 std::cin >> replacement;
 
-                colorFn = [&] (std::vector<cv::Vec3b> colors) {
-                    return remove_replace(colors, channel, threshold, replacement);
+                minColorFn = [&] (std::vector<cv::Vec3b> colors) {
+                    return remove_replace_min(colors, channel, threshold, replacement);
                 };
+                maxColorFn = [&] (std::vector<cv::Vec3b> colors) {
+                    return remove_replace_max(colors, channel, threshold, replacement);
+                };
+                break;
             default:
                 break;
         }

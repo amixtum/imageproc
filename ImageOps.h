@@ -47,7 +47,14 @@ namespace gp {
             bool flip2
     );
 
-    cv::Vec3b remove_replace(
+    cv::Vec3b remove_replace_min(
+            std::vector<cv::Vec3b> &colors, 
+            int channel, 
+            int threshold, 
+            int replacement
+    );
+
+    cv::Vec3b remove_replace_max(
             std::vector<cv::Vec3b> &colors, 
             int channel, 
             int threshold, 

@@ -96,6 +96,7 @@ std::array<cv::Mat, 4> gp::splitQuadrantsRef(cv::Mat &split) {
 }
 
 void gp::applyColorFn(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr) {
+    std::vector<std::pair<cv::Point, std::vector<cv::Vec3b>>> toApply;
     for (int x = 0; x < image.size().width; x += 1) {
         for (int y = 0; y < image.size().height; y += 1) {
             auto center = cv::Point(x, y);
@@ -105,10 +106,12 @@ void gp::applyColorFn(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Ve
                 colors.push_back(image.at<cv::Vec3b>(neighbor.y, neighbor.x));
             }
             colors.push_back(image.at<cv::Vec3b>(center));
-
-            cv::circle(image, center, 0, cv::Vec3b(0, 0, 0));
-            cv::circle(image, center, 0, colorFn(colors));
+            toApply.push_back(std::make_pair(center, colors));
         }
+    }
+
+    for (auto &p : toApply) {
+        cv::circle(image, p.first, 0, colorFn(p.second));
     }
 }
 
@@ -121,20 +124,22 @@ void gp::applyColorFnRange(cv::Mat &image, std::function<cv::Vec3b(std::vector<c
         || bottomRight.y > image.size().height) {
         return;
     }
-
+    std::vector<std::pair<cv::Point, std::vector<cv::Vec3b>>> toApply;
     for (int x = topLeft.x; x < bottomRight.x; x += 1) {
         for (int y = topLeft.y; y < bottomRight.y; y += 1) {
             auto center = cv::Point(x, y);
-            auto neighborhood = neighbors(nbr, center, 0, 0, image.size().width - 1, image.size().height - 1);
+            auto neighborhood = neighbors(nbr, center, topLeft.x, topLeft.y, bottomRight.x - 1, bottomRight.y - 1);
             std::vector<cv::Vec3b> colors;
             for (auto &neighbor : neighborhood) {
                 colors.push_back(image.at<cv::Vec3b>(neighbor));
             }
             colors.push_back(image.at<cv::Vec3b>(center));
-
-            cv::circle(image, center, 0, cv::Vec3b(0, 0, 0));
-            cv::circle(image, center, 0, colorFn(colors));
+            toApply.push_back(std::make_pair(center, colors));
         }
+    }
+
+    for (auto &p : toApply) {
+        cv::circle(image, p.first, 0, colorFn(p.second));
     }
 }
 
@@ -164,14 +169,73 @@ void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vect
 
     applyColorFnRecursive(quadrants[0], colorFn, nbr, !flip1, !flip2);
 
-    applyColorFnRecursive(quadrants[1], colorFn, nbr, !flip1, !flip2);
+    applyColorFnRecursive(quadrants[1], colorFn, nbr, flip1, !flip2);
 
-    applyColorFnRecursive(quadrants[2], colorFn, nbr, !flip1, !flip2);
+    applyColorFnRecursive(quadrants[2], colorFn, nbr, !flip1, flip2);
 
-    applyColorFnRecursive(quadrants[3], colorFn, nbr, !flip1, !flip2);
+    applyColorFnRecursive(quadrants[3], colorFn, nbr, flip1, flip2);
 }
 
-cv::Vec3b gp::remove_replace(
+cv::Vec3b gp::remove_replace_min(
+        std::vector<cv::Vec3b> &colors, 
+        int channel, 
+        int threshold, 
+        int replacement
+) {
+    auto toAdd = static_cast<unsigned char>(
+            static_cast<float>(replacement) * 
+            (static_cast<float>(replacement) / threshold)
+    );
+
+    auto avg = avgColor(colors);
+    auto selected = colors[0];
+    for (auto &color : colors) {
+        if (color[channel] < selected[channel]) {
+            selected = ((color * 2) + selected) / 3.f;
+        }
+    }
+
+
+    if (selected[channel] <= threshold) {
+        switch (channel) {
+        case 0:
+            return cv::Vec3b(selected[0] + toAdd, selected[1], replacement);
+        case 1:
+            return cv::Vec3b(selected[0], selected[1] + toAdd, replacement);
+        case 2:
+            return cv::Vec3b(selected[0], replacement, selected[2] + toAdd);
+        default:
+            return selected;
+        }
+    }
+
+    else {
+        switch (channel) {
+        case 0:
+            return (cv::Vec3b(
+                    replacement, 
+                    selected[1] + toAdd, 
+                    selected[2] + toAdd 
+            ));
+        case 1:
+            return (cv::Vec3b(
+                    selected[0] + toAdd, 
+                    replacement, 
+                    selected[2] + toAdd 
+            ));
+        case 2:
+            return (cv::Vec3b(
+                    selected[0] + toAdd, 
+                    selected[1] + toAdd, 
+                    replacement 
+            ));
+        default:
+            return selected;
+        }
+    }
+}
+
+cv::Vec3b gp::remove_replace_max(
         std::vector<cv::Vec3b> &colors, 
         int channel, 
         int threshold, 
@@ -263,7 +327,7 @@ cv::Vec3b gp::spherical(std::vector<cv::Vec3b> &colors) {
         static_cast<float>(color[2]) * 
         (std::sin((M_PI * 2.f * color[2]) / 255.f) 
          + (static_cast<float>(color[2]) / 255.f) 
-                * std::cos((M_PI * 2.f * color[0]) / 255.f))
+                * std::cos((M_PI * 2.f * color[2]) / 255.f))
     );
 
     return color;
