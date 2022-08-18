@@ -138,10 +138,10 @@ void testOptions(cv::Mat &image, char ** argv) {
                 applyColorFn(image, maxColorFn, Neighborhood::Moore);
                 break;
             case 'r':
-                applyColorFnRecursive(image, minColorFn, Neighborhood::Moore, true, false);
+                applyColorFnRecursive(image, minColorFn, Neighborhood::Moore, 0);
                 break;
             case 'R':
-                applyColorFnRecursive(image, maxColorFn, Neighborhood::Moore, true, false);
+                applyColorFnRecursive(image, maxColorFn, Neighborhood::Moore, 0);
                 break;
             case 'm':
                 std::cout << "color channel: ";

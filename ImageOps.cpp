@@ -79,8 +79,8 @@ std::array<cv::Mat, 4> gp::splitQuadrantsClone(cv::Mat &split) {
 std::array<cv::Mat, 4> gp::splitQuadrantsRef(cv::Mat &split) {
     std::array<cv::Mat, 4> quadrants;
 
-    int midX = std::floor(static_cast<float>(split.size().width) / 2.f);
-    int midY = std::floor(static_cast<float>(split.size().height) / 2.f);
+    int midX = std::ceil(static_cast<float>(split.size().width) / 2.f);
+    int midY = std::ceil(static_cast<float>(split.size().height) / 2.f);
 
     auto topLeft = cv::Rect(0, 0, midX, midY);
     auto topRight = cv::Rect(midX, 0, split.size().width - midX, midY);
@@ -143,7 +143,7 @@ void gp::applyColorFnRange(cv::Mat &image, std::function<cv::Vec3b(std::vector<c
     }
 }
 
-void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr, bool flip1, bool flip2) {
+void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, Neighborhood nbr, int quadrant) {
     if (image.size().width <= 2 || image.size().height <= 2) {
         applyColorFn(image, colorFn, nbr);
         return;
@@ -151,29 +151,47 @@ void gp::applyColorFnRecursive(cv::Mat &image, std::function<cv::Vec3b(std::vect
 
     auto quadrants = splitQuadrantsRef(image);
 
-    if (flip1) {
-        applyColorFn(quadrants[0], colorFn, nbr);
+    applyColorFn(quadrants[quadrant], colorFn, nbr);
+
+    switch (quadrant) {
+        case 0:
+            applyColorFnRecursive(quadrants[0], colorFn, nbr, 0);
+            applyColorFnRecursive(quadrants[1], colorFn, nbr, 1);
+            applyColorFnRecursive(quadrants[2], colorFn, nbr, 2);
+            applyColorFnRecursive(quadrants[3], colorFn, nbr, 3);
+
+            applyColorFn(quadrants[1], colorFn, nbr);
+            applyColorFn(quadrants[2], colorFn, nbr);
+            applyColorFn(quadrants[3], colorFn, nbr);
+            break;
+        case 1: 
+            applyColorFnRecursive(quadrants[0], colorFn, nbr, 0);
+            applyColorFnRecursive(quadrants[2], colorFn, nbr, 2);
+            applyColorFnRecursive(quadrants[3], colorFn, nbr, 3);
+
+            applyColorFn(quadrants[0], colorFn, nbr);
+            applyColorFn(quadrants[2], colorFn, nbr);
+            applyColorFn(quadrants[3], colorFn, nbr);
+            break;
+        case 2:
+            applyColorFnRecursive(quadrants[1], colorFn, nbr, 1);
+            applyColorFnRecursive(quadrants[0], colorFn, nbr, 0);
+            applyColorFnRecursive(quadrants[3], colorFn, nbr, 3);
+
+            applyColorFn(quadrants[1], colorFn, nbr);
+            applyColorFn(quadrants[0], colorFn, nbr);
+            applyColorFn(quadrants[3], colorFn, nbr);
+            break;
+        case 3:
+            applyColorFnRecursive(quadrants[1], colorFn, nbr, 1);
+            applyColorFnRecursive(quadrants[2], colorFn, nbr, 2);
+            applyColorFnRecursive(quadrants[0], colorFn, nbr, 0);
+
+            applyColorFn(quadrants[1], colorFn, nbr);
+            applyColorFn(quadrants[2], colorFn, nbr);
+            applyColorFn(quadrants[0], colorFn, nbr);
+            break;
     }
-
-    else {
-        applyColorFn(quadrants[3], colorFn, nbr);
-    }
-
-    if (flip2) {
-        applyColorFn(quadrants[1], colorFn, nbr);
-    }
-
-    else {
-        applyColorFn(quadrants[2], colorFn, nbr);
-    }
-
-    applyColorFnRecursive(quadrants[0], colorFn, nbr, !flip1, !flip2);
-
-    applyColorFnRecursive(quadrants[1], colorFn, nbr, flip1, !flip2);
-
-    applyColorFnRecursive(quadrants[2], colorFn, nbr, !flip1, flip2);
-
-    applyColorFnRecursive(quadrants[3], colorFn, nbr, flip1, flip2);
 }
 
 cv::Vec3b gp::remove_replace_min(
@@ -214,19 +232,19 @@ cv::Vec3b gp::remove_replace_min(
         case 0:
             return (cv::Vec3b(
                     replacement, 
-                    selected[1] + toAdd, 
+                    selected[1] - toAdd, 
                     selected[2] + toAdd 
             ));
         case 1:
             return (cv::Vec3b(
                     selected[0] + toAdd, 
                     replacement, 
-                    selected[2] + toAdd 
+                    selected[2] - toAdd 
             ));
         case 2:
             return (cv::Vec3b(
                     selected[0] + toAdd, 
-                    selected[1] + toAdd, 
+                    selected[1] - toAdd, 
                     replacement 
             ));
         default:
@@ -258,11 +276,11 @@ cv::Vec3b gp::remove_replace_max(
     if (selected[channel] >= threshold) {
         switch (channel) {
         case 0:
-            return cv::Vec3b(0, selected[1], avg[2] - toAdd);
+            return cv::Vec3b(0, selected[1], selected[2] - toAdd);
         case 1:
-            return cv::Vec3b(avg[0] - toAdd, 0, selected[2]);
+            return cv::Vec3b(selected[0] - toAdd, 0, selected[2]);
         case 2:
-            return cv::Vec3b(selected[0], avg[1] - toAdd, 0);
+            return cv::Vec3b(selected[0], selected[1] - toAdd, 0);
         default:
             return selected;
         }
@@ -272,21 +290,21 @@ cv::Vec3b gp::remove_replace_max(
         switch (channel) {
         case 0:
             return cv::Vec3b(
-                    (selected[0] + avg[0]) / 2 + toAdd, 
+                    selected[0] + toAdd, 
                     selected[1], 
                     selected[2] - toAdd
             );
         case 1:
             return cv::Vec3b(
                     selected[0] - toAdd, 
-                    (selected[1] + avg[1]) / 2 + toAdd, 
+                    selected[1] + toAdd, 
                     selected[2]
             );
         case 2:
             return cv::Vec3b(
                     selected[0], 
                     selected[1] - toAdd, 
-                    (selected[2] + avg[2]) / 2 + toAdd 
+                    selected[2] + toAdd 
             );
         default:
             return selected;
@@ -307,27 +325,22 @@ cv::Vec3b gp::avgColor(std::vector<cv::Vec3b> &colors) {
 }
 
 cv::Vec3b gp::spherical(std::vector<cv::Vec3b> &colors) {
-    auto color = gp::avgColor(colors);
+    auto avg = gp::avgColor(colors);
+    auto color = avg;
 
-    color[0] = static_cast<unsigned char>(
+    color[0] += color[0] * static_cast<unsigned char>(
         static_cast<float>(color[0]) * 
-        (std::sin((M_PI * 2.f * color[0]) / 255.f) 
-         + (static_cast<float>(color[0]) / 255.f) 
-            * std::cos((M_PI * 2.f * color[2]) / 255.f))
+        (std::sin((M_PI * 2.f * color[0]) / 255.f))
     );
     
-    color[1] = static_cast<unsigned char>(
+    color[1] += color[1] * static_cast<unsigned char>(
         static_cast<float>(color[1]) * 
-        (std::sin((M_PI * 2.f * color[1]) / 255.f) 
-         + (static_cast<float>(color[1]) / 255.f) 
-                * std::cos((M_PI * 2.f * color[1]) / 255.f))
+        (std::cos((M_PI * 2.f * color[1]) / 255.f))
     );
 
-    color[2] = static_cast<unsigned char>(
+    color[2] -= color[2] * static_cast<unsigned char>(
         static_cast<float>(color[2]) * 
-        (std::sin((M_PI * 2.f * color[2]) / 255.f) 
-         + (static_cast<float>(color[2]) / 255.f) 
-                * std::cos((M_PI * 2.f * color[2]) / 255.f))
+        (std::sin((M_PI * 2.f * color[2]) / 255.f))
     );
 
     return color;

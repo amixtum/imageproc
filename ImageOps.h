@@ -43,8 +43,7 @@ namespace gp {
             cv::Mat &image, 
             std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, 
             Neighborhood nbr, 
-            bool flip1,
-            bool flip2
+            int quadrant
     );
 
     cv::Vec3b remove_replace_min(
