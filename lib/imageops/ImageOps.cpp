@@ -5,7 +5,7 @@
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "ImageOps.h"
+#include "../../include/imageops/ImageOps.h"
 
 void gp::padHeight(cv::Mat &mat, int newHeight) {
     if (mat.size().height < newHeight) {

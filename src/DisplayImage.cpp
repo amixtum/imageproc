@@ -9,10 +9,11 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "ImageOps.h"
-using namespace gp;
+#include "../include/imageops/ImageOps.h"
 
-#include "PointGraph.h"
+#include "../include/imageops/PointGraph.h"
+
+using namespace gp;
 
 void testGraph(cv::Mat &image1, cv::Mat &image2, int connectRandom, float vP);
 

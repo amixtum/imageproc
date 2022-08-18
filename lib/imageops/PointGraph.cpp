@@ -5,9 +5,11 @@
 
 #include <opencv2/imgproc.hpp>
 
-#include "PointGraph.h"
-#include "ImageOps.h"
-#include "Heap.h"
+#include "../../include/generic/Heap.h"
+
+#include "../../include/imageops/PointGraph.h"
+#include "../../include/imageops/ImageOps.h"
+
 
 PointGraph::PointGraph()  { }
 

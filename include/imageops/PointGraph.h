@@ -7,10 +7,12 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 
-#include "Graph.h"
+#include "../generic/Graph.h"
+#include "../generic/UnionFind.h"
+
+#include "../util/Neighborhood.h"
+
 #include "PointVertex.h"
-#include "Neighborhood.h"
-#include "UnionFind.h"
 
 using Vertex = std::shared_ptr<PointVertex>;
 

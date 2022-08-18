@@ -1,4 +1,5 @@
-#include "Neighborhood.h"
+#include "../../include/util/Neighborhood.h"
+
 
 std::vector<cv::Point> neighbors(Neighborhood n, cv::Point center, int leftBound, int lowBound, int rightBound, int upBound) {
     std::vector<cv::Point> points;

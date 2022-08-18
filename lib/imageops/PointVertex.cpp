@@ -1,4 +1,4 @@
-#include "PointVertex.h"
+#include "../../include/imageops/PointVertex.h"
 
 PointVertex::PointVertex() : _point(cv::Point2i(0, 0)), _color(cv::Vec3b(0, 0, 0)) {
     std::cout << "In default constructor for PointVertex" << std::endl;

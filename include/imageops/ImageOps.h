@@ -8,9 +8,9 @@
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "Graph.h"
+#include "../generic/Graph.h"
+#include "../util/Neighborhood.h"
 #include "PointGraph.h"
-#include "Neighborhood.h"
 
 namespace gp {
     void padHeight(cv::Mat &mat, int newHeight);
