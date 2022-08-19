@@ -13,6 +13,8 @@
 
 #include "../include/imageops/PointGraph.h"
 
+#include "../include/generic/BinarySearchTree.h"
+
 using namespace gp;
 
 void testGraph(cv::Mat &image1, cv::Mat &image2, int connectRandom, float vP);
@@ -28,6 +30,8 @@ int main(int argc, char ** argv) {
         printf("Usage: DisplayImage <ImagePath> <GraphConnectedness> <UnionPercentage>");
         return -1;
     }
+
+    BinarySearchTree<int, PointVertex> pointTree(0, PointVertex());
 
     cv::Mat image1;
     //cv::Mat image2;
