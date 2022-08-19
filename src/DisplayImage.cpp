@@ -8,9 +8,9 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 #include "../include/generic/BinarySearchTree.h"
 #include "../include/imageops/ImageOps.h"
@@ -70,10 +70,10 @@ main(int argc, char** argv)
 }
 
 std::shared_ptr<BinarySearchTree<int, PointVertex>>
-makeNode(int k, int x, int y, int r, int g, int b) {
+makeNode(int k, int x, int y, int r, int g, int b)
+{
   return std::make_shared<BinarySearchTree<int, PointVertex>>(
-    k, PointVertex(cv::Point(x, y), cv::Vec3b(b, g, r))
-  );
+    k, PointVertex(cv::Point(x, y), cv::Vec3b(b, g, r)));
 }
 
 void
@@ -94,11 +94,8 @@ testBinarySearchTree()
 
   std::cout << "Min: " << t1->minValue().x() << std::endl;
   std::cout << "Max: " << t1->maxValue().x() << std::endl;
-  std::cout << "Successor of 2: " 
-            << t4->successor()->value().x() 
-            << std::endl;
-  std::cout << "Predecessor of 5: " 
-            << t3->predecessor()->value().x()
+  std::cout << "Successor of 2: " << t4->successor()->value().x() << std::endl;
+  std::cout << "Predecessor of 5: " << t3->predecessor()->value().x()
             << std::endl;
 }
 
@@ -217,20 +214,10 @@ testOptions(cv::Mat& image, char** argv)
         std::cin >> replacement;
 
         minColorFn = [&](std::vector<cv::Vec3b> colors) {
-          return remove_replace_min(
-              colors, 
-              channel, 
-              threshold, 
-              replacement
-          );
+          return remove_replace_min(colors, channel, threshold, replacement);
         };
         maxColorFn = [&](std::vector<cv::Vec3b> colors) {
-          return remove_replace_max(
-              colors, 
-              channel, 
-              threshold, 
-              replacement
-          );
+          return remove_replace_max(colors, channel, threshold, replacement);
         };
         break;
       default:

@@ -13,17 +13,15 @@ public:
 
   BinarySearchTree(K key, V value);
 
-  BinarySearchTree(const BinarySearchTree<K, V> &other);
+  BinarySearchTree(const BinarySearchTree<K, V>& other);
 
-  void setPtrs(Node &parent,
-               Node &left,
-               Node &right);
+  void setPtrs(Node& parent, Node& left, Node& right);
 
-  void setParent(Node &parent);
+  void setParent(Node& parent);
 
-  void setLeft(Node &left);
+  void setLeft(Node& left);
 
-  void setRight(Node &right);
+  void setRight(Node& right);
 
   K key() const;
 
@@ -49,11 +47,11 @@ public:
 
   Node successor() const;
 
-  static void insert(Node root, K &key, V &value);
+  static void insert(Node root, K& key, V& value);
 
   static void insert(Node root, Node node);
 
-  static Node makeNode(K &key, V &value);
+  static Node makeNode(K& key, V& value);
 
 private:
   const K _key;
@@ -64,8 +62,6 @@ private:
   Node _right = nullptr;
 };
 
-
-
 template<class K, class V>
 BinarySearchTree<K, V>::BinarySearchTree(K key, V value)
   : _key(key)
@@ -73,8 +69,8 @@ BinarySearchTree<K, V>::BinarySearchTree(K key, V value)
 {
 }
 
-template <class K, class V>
-BinarySearchTree<K, V>::BinarySearchTree(const BinarySearchTree<K, V> &other)
+template<class K, class V>
+BinarySearchTree<K, V>::BinarySearchTree(const BinarySearchTree<K, V>& other)
   : _key(other.key())
   , _value(other.value())
 {
@@ -85,9 +81,7 @@ BinarySearchTree<K, V>::BinarySearchTree(const BinarySearchTree<K, V> &other)
 
 template<class K, class V>
 void
-BinarySearchTree<K, V>::setPtrs(Node &parent,
-                                Node &left,
-                                Node &right)
+BinarySearchTree<K, V>::setPtrs(Node& parent, Node& left, Node& right)
 {
   _parent = parent;
   _left = left;
@@ -96,69 +90,63 @@ BinarySearchTree<K, V>::setPtrs(Node &parent,
 
 template<class K, class V>
 void
-BinarySearchTree<K, V>::setParent(Node &parent)
+BinarySearchTree<K, V>::setParent(Node& parent)
 {
   _parent = parent;
 }
 
 template<class K, class V>
 void
-BinarySearchTree<K, V>::setLeft(Node &left)
+BinarySearchTree<K, V>::setLeft(Node& left)
 {
   _left = left;
 }
 
 template<class K, class V>
 void
-BinarySearchTree<K, V>::setRight(Node &right)
+BinarySearchTree<K, V>::setRight(Node& right)
 {
   _right = right;
 }
 
 template<class K, class V>
 K
-BinarySearchTree<K, V>::key()
-  const 
+BinarySearchTree<K, V>::key() const
 {
   return _key;
 }
 
 template<class K, class V>
 V
-BinarySearchTree<K, V>::value()
-  const
+BinarySearchTree<K, V>::value() const
 {
   return _value;
 }
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::parent()
-  const
+BinarySearchTree<K, V>::parent() const
 {
   return _parent;
 }
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::left()
-  const
+BinarySearchTree<K, V>::left() const
 {
   return _left;
 }
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::right()
-  const
+BinarySearchTree<K, V>::right() const
 {
   return _right;
 }
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::search(K& key)
-  const
+BinarySearchTree<K, V>::search(K& key) const
 {
   if (key == _key) {
     return std::make_shared<BinarySearchTree<K, V>>(*this);
@@ -182,8 +170,7 @@ BinarySearchTree<K, V>::search(K& key)
 
 template<class K, class V>
 V
-BinarySearchTree<K, V>::minValue()
-  const
+BinarySearchTree<K, V>::minValue() const
 {
   if (_left == nullptr) {
     return _value;
@@ -194,8 +181,7 @@ BinarySearchTree<K, V>::minValue()
 
 template<class K, class V>
 V
-BinarySearchTree<K, V>::maxValue()
-  const
+BinarySearchTree<K, V>::maxValue() const
 {
   if (_right == nullptr) {
     return _value;
@@ -206,8 +192,7 @@ BinarySearchTree<K, V>::maxValue()
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::min()
-  const
+BinarySearchTree<K, V>::min() const
 {
   if (_left == nullptr) {
     return std::make_shared<BinarySearchTree<K, V>>(*this);
@@ -218,8 +203,7 @@ BinarySearchTree<K, V>::min()
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::max()
-  const
+BinarySearchTree<K, V>::max() const
 {
   if (_right == nullptr) {
     return std::make_shared<BinarySearchTree<K, V>>(*this);
@@ -230,8 +214,7 @@ BinarySearchTree<K, V>::max()
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::predecessor()
-  const
+BinarySearchTree<K, V>::predecessor() const
 {
   if (_left != nullptr) {
     return left()->max();
@@ -253,8 +236,7 @@ BinarySearchTree<K, V>::predecessor()
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::successor()
-  const
+BinarySearchTree<K, V>::successor() const
 {
   if (_right != nullptr) {
     return right()->min();
@@ -276,7 +258,7 @@ BinarySearchTree<K, V>::successor()
 
 template<class K, class V>
 void
-BinarySearchTree<K, V>::insert(Node root, K &key, V &value)
+BinarySearchTree<K, V>::insert(Node root, K& key, V& value)
 {
   auto newNode = std::make_shared<BinarySearchTree<K, V>>(key, value);
 
@@ -284,59 +266,54 @@ BinarySearchTree<K, V>::insert(Node root, K &key, V &value)
   BinarySearchTree<K, V>::Node iter = root;
 
   while (iter != nullptr) {
-    newParent = iter; 
+    newParent = iter;
 
     if (key < iter->key()) {
       iter = iter->left();
-    }
-    else {
+    } else {
       iter = iter->right();
     }
-
   }
 
   newNode->setParent(newParent);
-  
+
   if (newNode->key() < newParent->key()) {
     newParent->setLeft(newNode);
-  }
-  else {
+  } else {
     newParent->setRight(newNode);
   }
 }
 
-template <class K, class V>
+template<class K, class V>
 void
-BinarySearchTree<K, V>::insert(BinarySearchTree<K, V>::Node root, BinarySearchTree<K, V>::Node node) 
+BinarySearchTree<K, V>::insert(BinarySearchTree<K, V>::Node root,
+                               BinarySearchTree<K, V>::Node node)
 {
   BinarySearchTree<K, V>::Node newParent = nullptr;
   BinarySearchTree<K, V>::Node iter = root;
 
   while (iter != nullptr) {
-    newParent = iter; 
+    newParent = iter;
 
     if (node->key() < iter->key()) {
       iter = iter->left();
-    }
-    else {
+    } else {
       iter = iter->right();
     }
-
   }
 
   node->setParent(newParent);
-  
+
   if (node->key() < newParent->key()) {
     newParent->setLeft(node);
-  }
-  else {
+  } else {
     newParent->setRight(node);
   }
 }
 
-template <class K, class V>
+template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::makeNode(K &key, V &value) 
+BinarySearchTree<K, V>::makeNode(K& key, V& value)
 {
   return std::make_shared<BinarySearchTree<K, V>>(key, value);
 }
