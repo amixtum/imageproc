@@ -4,7 +4,6 @@
 #include <array>
 #include <cmath>
 #include <functional>
-
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -13,92 +12,93 @@
 #include "PointGraph.h"
 
 namespace gp {
-    void padHeight(cv::Mat &mat, int newHeight);
+void
+padHeight(cv::Mat& mat, int newHeight);
 
-    void padWidth(cv::Mat &mat, int newWidth);
+void
+padWidth(cv::Mat& mat, int newWidth);
 
-    void glueHorizontal(cv::Mat &left, cv::Mat &right, cv::Mat &glued);
+void
+glueHorizontal(cv::Mat& left, cv::Mat& right, cv::Mat& glued);
 
-    void glueVertical(cv::Mat &left, cv::Mat &right, cv::Mat &glued);
+void
+glueVertical(cv::Mat& left, cv::Mat& right, cv::Mat& glued);
 
-    std::array<cv::Mat, 4> splitQuadrantsClone(cv::Mat &split);
+std::array<cv::Mat, 4>
+splitQuadrantsClone(cv::Mat& split);
 
-    std::array<cv::Mat, 4> splitQuadrantsRef(cv::Mat &split);
+std::array<cv::Mat, 4>
+splitQuadrantsRef(cv::Mat& split);
 
-    void applyColorFn(
-            cv::Mat &image, 
-            std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, 
-            Neighborhood nbr
-    );
+void
+applyColorFn(cv::Mat& image,
+             std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn,
+             Neighborhood nbr);
 
-    void applyColorFnRange(
-            cv::Mat &image, 
-            std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, 
-            Neighborhood nbr, 
-            cv::Point topLeft, 
-            cv::Point bottomRight
-    );
+void
+applyColorFnRange(cv::Mat& image,
+                  std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn,
+                  Neighborhood nbr,
+                  cv::Point topLeft,
+                  cv::Point bottomRight);
 
-    void applyColorFnRecursive(
-            cv::Mat &image, 
-            std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn, 
-            Neighborhood nbr, 
-            int quadrant
-    );
+void
+applyColorFnRecursive(cv::Mat& image,
+                      std::function<cv::Vec3b(std::vector<cv::Vec3b>&)> colorFn,
+                      Neighborhood nbr,
+                      int quadrant);
 
-    cv::Vec3b remove_replace_min(
-            std::vector<cv::Vec3b> &colors, 
-            int channel, 
-            int threshold, 
-            int replacement
-    );
+cv::Vec3b
+remove_replace_min(std::vector<cv::Vec3b>& colors,
+                   int channel,
+                   int threshold,
+                   int replacement);
 
-    cv::Vec3b remove_replace_max(
-            std::vector<cv::Vec3b> &colors, 
-            int channel, 
-            int threshold, 
-            int replacement
-    );
-    
-    cv::Vec3b avgColor(std::vector<cv::Vec3b> &colors);
+cv::Vec3b
+remove_replace_max(std::vector<cv::Vec3b>& colors,
+                   int channel,
+                   int threshold,
+                   int replacement);
 
-    cv::Vec3b spherical(std::vector<cv::Vec3b> &colors);
+cv::Vec3b
+avgColor(std::vector<cv::Vec3b>& colors);
 
-    int compareIntensity(cv::Vec3b l, cv::Vec3b r);
+cv::Vec3b
+spherical(std::vector<cv::Vec3b>& colors);
 
-    void swapPixels(cv::Mat &image, cv::Point l, cv::Point r);
+int
+compareIntensity(cv::Vec3b l, cv::Vec3b r);
 
-    int partitionRow(
-            cv::Mat &image, 
-            std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, 
-            int xMin, 
-            int xMax, 
-            int y
-    );
+void
+swapPixels(cv::Mat& image, cv::Point l, cv::Point r);
 
-    int partitionCol(
-            cv::Mat &image, 
-            std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, 
-            int yMin, 
-            int yMax, 
-            int x
-    );
+int
+partitionRow(cv::Mat& image,
+             std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp,
+             int xMin,
+             int xMax,
+             int y);
 
-    void quicksortRow(
-            cv::Mat &image, 
-            std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, 
-            int xMin, 
-            int xMax, 
-            int y
-    );
+int
+partitionCol(cv::Mat& image,
+             std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp,
+             int yMin,
+             int yMax,
+             int x);
 
-    void quicksortCol(
-            cv::Mat &image, 
-            std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp, 
-            int yMin, 
-            int yMax, 
-            int x
-    );
-}
+void
+quicksortRow(cv::Mat& image,
+             std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp,
+             int xMin,
+             int xMax,
+             int y);
+
+void
+quicksortCol(cv::Mat& image,
+             std::function<int(cv::Vec3b, cv::Vec3b)> colorCmp,
+             int yMin,
+             int yMax,
+             int x);
+} // namespace gp
 
 #endif // ImageOps.h included

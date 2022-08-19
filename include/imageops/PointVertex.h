@@ -5,48 +5,50 @@
 #include <opencv2/core/types.hpp>
 #include <opencv2/opencv.hpp>
 
-class PointVertex {
-    public:
-        PointVertex();
+class PointVertex
+{
+public:
+  PointVertex();
 
-        PointVertex(cv::Point2i point, cv::Vec3b color);
+  PointVertex(cv::Point2i point, cv::Vec3b color);
 
-        PointVertex(PointVertex &copyFrom);
+  PointVertex(PointVertex& copyFrom);
 
-        PointVertex(const PointVertex &copyFrom);
+  PointVertex(const PointVertex& copyFrom);
 
-        cv::Point2i point() const;
+  cv::Point2i point() const;
 
-        int x() const;
+  int x() const;
 
-        int y() const;
+  int y() const;
 
-        cv::Vec3b color() const;
+  cv::Vec3b color() const;
 
-        unsigned char blue() const;
+  unsigned char blue() const;
 
-        unsigned char green() const;
+  unsigned char green() const;
 
-        unsigned char red() const;
+  unsigned char red() const;
 
-        void setPoint(cv::Point2i point);
+  void setPoint(cv::Point2i point);
 
-        void setColor(cv::Vec3b color);
+  void setColor(cv::Vec3b color);
 
-        void setBlue(unsigned char blue);
+  void setBlue(unsigned char blue);
 
-        void setGreen(unsigned char green);
+  void setGreen(unsigned char green);
 
-        void setRed(unsigned char red);
+  void setRed(unsigned char red);
 
-        PointVertex &operator=(const PointVertex &rhs) noexcept;
+  PointVertex& operator=(const PointVertex& rhs) noexcept;
 
-        bool operator==(const PointVertex &rhs) const;
+  bool operator==(const PointVertex& rhs) const;
 
-        bool operator!=(const PointVertex &rhs) const;
-    private:
-        cv::Point2i _point;
-        cv::Vec3b _color;
+  bool operator!=(const PointVertex& rhs) const;
+
+private:
+  cv::Point2i _point;
+  cv::Vec3b _color;
 };
 
 #endif // PointVertex.h included
