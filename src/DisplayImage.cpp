@@ -1,13 +1,13 @@
-#include <memory>
-#include <opencv2/videoio.hpp>
 #include <string.h>
 
 #include <algorithm>
 #include <array>
 #include <functional>
+#include <memory>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
 #include <random>
 #include <string>
 #include <vector>
@@ -72,13 +72,14 @@ main(int argc, char** argv)
 std::shared_ptr<BinarySearchTree<int, PointVertex>>
 makeNode(int k, int x, int y, int r, int g, int b)
 {
-  return std::make_shared<BinarySearchTree<int, PointVertex>>(
+  return BinarySearchTree<int, PointVertex>::MakeNode(
     k, PointVertex(cv::Point(x, y), cv::Vec3b(b, g, r)));
 }
 
 void
 testBinarySearchTree()
 {
+  using NodeType = BinarySearchTree<int, PointVertex>::Node;
   auto t1 = makeNode(4, 4, 0, 0, 0, 0);
   auto t2 = makeNode(1, 1, 0, 0, 0, 0);
   auto t3 = makeNode(5, 5, 0, 0, 0, 0);
@@ -86,17 +87,42 @@ testBinarySearchTree()
   auto t5 = makeNode(3, 3, 0, 0, 0, 0);
   auto t6 = makeNode(6, 6, 0, 0, 0, 0);
 
-  BinarySearchTree<int, PointVertex>::insert(t1, t2);
-  BinarySearchTree<int, PointVertex>::insert(t1, t3);
-  BinarySearchTree<int, PointVertex>::insert(t1, t4);
-  BinarySearchTree<int, PointVertex>::insert(t1, t5);
-  BinarySearchTree<int, PointVertex>::insert(t1, t6);
+  BinarySearchTree<int, PointVertex>::Insert(t1, t2);
+  BinarySearchTree<int, PointVertex>::Insert(t1, t3);
+  BinarySearchTree<int, PointVertex>::Insert(t1, t4);
+  BinarySearchTree<int, PointVertex>::Insert(t1, t5);
+  BinarySearchTree<int, PointVertex>::Insert(t1, t6);
 
-  std::cout << "Min: " << t1->minValue().x() << std::endl;
-  std::cout << "Max: " << t1->maxValue().x() << std::endl;
-  std::cout << "Successor of 2: " << t4->successor()->value().x() << std::endl;
-  std::cout << "Predecessor of 5: " << t3->predecessor()->value().x()
+  std::cout << "Root left subtree size: " << t1->left()->_size << std::endl;
+
+  BinarySearchTree<int, PointVertex>::DeleteNode(t5);
+
+  std::cout << "Root left subtree size after delete: " << t1->left()->_size
             << std::endl;
+
+  std::vector<NodeType> nodes{ t1, t2, t3, t4, t6 };
+
+  for (auto& node : nodes) {
+    auto succ = BinarySearchTree<int, PointVertex>::Successor(node);
+
+    auto pred = BinarySearchTree<int, PointVertex>::Predecessor(node);
+
+    auto rnk = BinarySearchTree<int, PointVertex>::Rank(t1, node);
+
+    if (succ != nullptr) {
+      std::cout << "Successor of " << node->key() << ": " << succ->key()
+                << std::endl;
+    }
+
+    if (pred != nullptr) {
+      std::cout << "Predecessor of " << node->key() << ": " << pred->key()
+                << std::endl;
+    }
+
+    std::cout << "Rank of " << node->key() << ": " << rnk << std::endl;
+  }
+
+  std::cout << "\n";
 }
 
 void
