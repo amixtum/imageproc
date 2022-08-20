@@ -87,18 +87,13 @@ testBinarySearchTree()
   auto t5 = makeNode(3, 3, 0, 0, 0, 0);
   auto t6 = makeNode(6, 6, 0, 0, 0, 0);
 
-  BinarySearchTree<int, PointVertex>::Insert(t1, t2);
-  BinarySearchTree<int, PointVertex>::Insert(t1, t3);
-  BinarySearchTree<int, PointVertex>::Insert(t1, t4);
-  BinarySearchTree<int, PointVertex>::Insert(t1, t5);
-  BinarySearchTree<int, PointVertex>::Insert(t1, t6);
-
-  std::cout << "Root left subtree size: " << t1->left()->_size << std::endl;
+  BinarySearchTree<int, PointVertex>::InsertNode(t1, t2);
+  BinarySearchTree<int, PointVertex>::InsertNode(t1, t3);
+  BinarySearchTree<int, PointVertex>::InsertNode(t1, t4);
+  BinarySearchTree<int, PointVertex>::InsertNode(t1, t5);
+  BinarySearchTree<int, PointVertex>::InsertNode(t1, t6);
 
   BinarySearchTree<int, PointVertex>::DeleteNode(t5);
-
-  std::cout << "Root left subtree size after delete: " << t1->left()->_size
-            << std::endl;
 
   std::vector<NodeType> nodes{ t1, t2, t3, t4, t6 };
 

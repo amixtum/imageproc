@@ -14,23 +14,15 @@ public:
 
   BinarySearchTree(K key, V value);
 
-  // BinarySearchTree(BinarySearchTree<K, V>& other);
-
-  void setPtrs(Node parent, Node left, Node right);
-
-  void setParent(Node parent);
-
-  void setLeft(Node left);
-
-  void setRight(Node right);
-
-  void setValues(K key, V value);
-
   K key() const;
 
   V value() const;
 
-  // Returns nullptr if this tree does not have an connections
+  V minValue();
+
+  V maxValue();
+
+  // Returns nullptr if this tree does not have any connections
   Node node();
 
   Node parent();
@@ -41,10 +33,7 @@ public:
 
   Node search(K key);
 
-  V minValue();
-
-  V maxValue();
-
+public:
   static Node Min(Node root);
 
   static Node Max(Node root);
@@ -53,9 +42,9 @@ public:
 
   static Node Successor(Node node);
 
-  static void Insert(Node root, K key, V value);
+  static void InsertNode(Node root, K key, V value);
 
-  static void Insert(Node root, Node node);
+  static void InsertNode(Node root, Node node);
 
   static void DeleteNode(Node toDelete);
 
@@ -66,6 +55,17 @@ public:
   static int Rank(Node root, K key);
 
   static Node MakeNode(K key, V value);
+
+protected:
+  void setPtrs(Node parent, Node left, Node right);
+
+  void setParent(Node parent);
+
+  void setLeft(Node left);
+
+  void setRight(Node right);
+
+  void setValues(K key, V value);
 
   int _size = 1;
 
@@ -306,7 +306,7 @@ BinarySearchTree<K, V>::Successor(Node node)
 
 template<class K, class V>
 void
-BinarySearchTree<K, V>::Insert(Node root, K key, V value)
+BinarySearchTree<K, V>::InsertNode(Node root, K key, V value)
 {
   auto newNode = std::make_shared<BinarySearchTree<K, V>>(key, value);
 
@@ -336,7 +336,7 @@ BinarySearchTree<K, V>::Insert(Node root, K key, V value)
 
 template<class K, class V>
 void
-BinarySearchTree<K, V>::Insert(Node root, Node node)
+BinarySearchTree<K, V>::InsertNode(Node root, Node node)
 {
   BinarySearchTree<K, V>::Node newParent = nullptr;
   BinarySearchTree<K, V>::Node iter = root;
