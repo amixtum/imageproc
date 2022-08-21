@@ -93,16 +93,20 @@ testBinarySearchTree()
   BinarySearchTree<int, PointVertex>::InsertNode(t1, t5);
   BinarySearchTree<int, PointVertex>::InsertNode(t1, t6);
 
-  BinarySearchTree<int, PointVertex>::DeleteNode(t5);
+  std::cout << "Finished inserting nodes\n";
 
-  std::vector<NodeType> nodes{ t1, t2, t3, t4, t6 };
+  auto newRoot = BinarySearchTree<int, PointVertex>::DeleteNode(t1);
+
+  std::cout << "Value of new root is: " << newRoot->key() << std::endl;
+
+  std::vector<NodeType> nodes{ t2, t3, t4, t5, t6 };
 
   for (auto& node : nodes) {
     auto succ = BinarySearchTree<int, PointVertex>::Successor(node);
 
     auto pred = BinarySearchTree<int, PointVertex>::Predecessor(node);
 
-    auto rnk = BinarySearchTree<int, PointVertex>::Rank(t1, node);
+    auto rnk = BinarySearchTree<int, PointVertex>::Rank(newRoot, node);
 
     if (succ != nullptr) {
       std::cout << "Successor of " << node->key() << ": " << succ->key()

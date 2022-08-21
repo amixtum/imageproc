@@ -2,7 +2,6 @@
 #define BINARY_SEARCH_TREE_H_
 
 #include <cmath>
-#include <iostream>
 #include <memory>
 #include <random>
 
@@ -12,49 +11,17 @@ class BinarySearchTree
 public:
   using Node = std::shared_ptr<BinarySearchTree<K, V>>;
 
-  BinarySearchTree(K key, V value);
+  BinarySearchTree(K key, V val);
 
   K key() const;
 
   V value() const;
-
-  V minValue();
-
-  V maxValue();
-
-  // Returns nullptr if this tree does not have any connections
-  Node node();
 
   Node parent();
 
   Node left();
 
   Node right();
-
-  Node search(K key);
-
-public:
-  static Node Min(Node root);
-
-  static Node Max(Node root);
-
-  static Node Predecessor(Node node);
-
-  static Node Successor(Node node);
-
-  static void InsertNode(Node root, K key, V value);
-
-  static void InsertNode(Node root, Node node);
-
-  static void DeleteNode(Node toDelete);
-
-  static Node Select(Node root, int index);
-
-  static int Rank(Node root, Node node);
-
-  static int Rank(Node root, K key);
-
-  static Node MakeNode(K key, V value);
 
 protected:
   void setPtrs(Node parent, Node left, Node right);
@@ -67,16 +34,11 @@ protected:
 
   void setValues(K key, V value);
 
+public:
+  Node _root = nullptr;
+
+protected:
   int _size = 1;
-
-private:
-  static int _Rank(Node node, K key);
-
-  static void _Transplant(Node node, Node transplantWith);
-
-  static void _DecrementSize(Node toDelete);
-
-  static void _IncrementSize(Node toAdd);
 
 private:
   K _key;
@@ -85,12 +47,51 @@ private:
   Node _parent = nullptr;
   Node _left = nullptr;
   Node _right = nullptr;
+
+public:
+  static Node MakeNode(K key, V value);
+
+  static Node Search(Node root, K key);
+
+  static Node Min(Node root);
+
+  static Node Max(Node root);
+
+  static Node Predecessor(Node node);
+
+  static Node Successor(Node node);
+
+  static Node Select(Node root, int index);
+
+  static int Rank(Node root, Node node);
+
+  static int Rank(Node root, K key);
+
+  // protected:
+  static Node InsertNode(Node root, K key, V value);
+
+  static Node InsertNode(Node root, Node node);
+
+  static Node DeleteNode(Node toDelete);
+
+private:
+  static Node RotateLeft(Node toRotate);
+
+  static Node RotateRight(Node toRotate);
+
+  static int _Rank(Node node, K key);
+
+  static bool _Transplant(Node node, Node transplantWith);
+
+  static void _DecrementSize(Node toDelete);
+
+  static void _IncrementSize(Node toAdd);
 };
 
 template<class K, class V>
-BinarySearchTree<K, V>::BinarySearchTree(K key, V value)
+BinarySearchTree<K, V>::BinarySearchTree(K key, V val)
   : _key(key)
-  , _value(value)
+  , _value(val)
 {
 }
 
@@ -160,25 +161,6 @@ BinarySearchTree<K, V>::value() const
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::node()
-{
-  if (left() != nullptr) {
-    return left()->parent();
-  } else if (right() != nullptr) {
-    return right()->parent();
-  } else if (parent() != nullptr) {
-    if (parent()->left()->key() == key()) {
-      return parent()->left();
-    } else {
-      return parent()->right();
-    }
-  } else {
-    return nullptr;
-  }
-}
-
-template<class K, class V>
-typename BinarySearchTree<K, V>::Node
 BinarySearchTree<K, V>::parent()
 {
   return _parent;
@@ -200,48 +182,79 @@ BinarySearchTree<K, V>::right()
 
 template<class K, class V>
 typename BinarySearchTree<K, V>::Node
-BinarySearchTree<K, V>::search(K key)
+BinarySearchTree<K, V>::RotateLeft(Node toRotate)
 {
-  if (key == _key) {
-    return std::make_shared<BinarySearchTree<K, V>>(*this);
-  }
-  if (key < _key) {
-    if (_left == nullptr) {
-      return nullptr;
-    }
+  auto rightSubtree = toRotate->right();
 
-    return left()->search(key);
+  if (rightSubtree != nullptr) {
+    toRotate->setRight(rightSubtree->left());
+    rightSubtree->left()->setParent(toRotate);
+    rightSubtree->setParent(toRotate->parent());
   }
 
-  else {
-    if (_right == nullptr) {
-      return nullptr;
-    }
-
-    return right()->search(key);
+  if (toRotate->parent() == nullptr) {
+    // ?
+  } else if (toRotate == toRotate->parent()->left()) {
+    toRotate->parent()->setLeft(rightSubtree);
+  } else {
+    toRotate->parent()->setRight(rightSubtree);
   }
+
+  if (rightSubtree != nullptr) {
+    rightSubtree->setLeft(toRotate);
+  }
+
+  toRotate->setParent(rightSubtree);
+
+  return rightSubtree;
 }
 
 template<class K, class V>
-V
-BinarySearchTree<K, V>::minValue()
+typename BinarySearchTree<K, V>::Node
+BinarySearchTree<K, V>::RotateRight(Node toRotate)
 {
-  if (_left == nullptr) {
-    return _value;
+  auto leftSubtree = toRotate->left();
+
+  toRotate->setLeft(leftSubtree->right());
+
+  if (leftSubtree != nullptr) {
+    leftSubtree->right()->setParent(toRotate);
+    leftSubtree->setParent(toRotate->parent());
+    leftSubtree->setRight(toRotate);
   }
 
-  return left()->minValue();
+  if (toRotate->parent() == nullptr) {
+    // ?
+  } else if (toRotate == toRotate->parent()->left()) {
+    toRotate->parent()->setLeft(leftSubtree);
+  } else {
+    toRotate->parent()->setRight(leftSubtree);
+  }
+
+  toRotate->setParent(leftSubtree);
+
+  return leftSubtree;
 }
 
 template<class K, class V>
-V
-BinarySearchTree<K, V>::maxValue()
+typename BinarySearchTree<K, V>::Node
+BinarySearchTree<K, V>::Search(Node root, K key)
 {
-  if (_right == nullptr) {
-    return _value;
+  if (key == root->key()) {
+    return root;
+  } else if (key < root->key()) {
+    if (root->left() == nullptr) {
+      return nullptr;
+    } else {
+      return BinarySearchTree<K, V>::Search(root->left(), key);
+    }
+  } else {
+    if (root->right() == nullptr) {
+      return nullptr;
+    } else {
+      return BinarySearchTree<K, V>::Search(root->right(), key);
+    }
   }
-
-  return right()->maxValue();
 }
 
 template<class K, class V>
@@ -270,6 +283,10 @@ template<class K, class V>
 typename BinarySearchTree<K, V>::Node
 BinarySearchTree<K, V>::Predecessor(Node node)
 {
+  if (node == nullptr) {
+    return nullptr;
+  }
+
   if (node->left() != nullptr) {
     return BinarySearchTree<K, V>::Max(node->left());
   }
@@ -289,6 +306,10 @@ template<class K, class V>
 typename BinarySearchTree<K, V>::Node
 BinarySearchTree<K, V>::Successor(Node node)
 {
+  if (node == nullptr) {
+    return nullptr;
+  }
+
   if (node->right() != nullptr) {
     return BinarySearchTree<K, V>::Min(node->right());
   }
@@ -305,10 +326,14 @@ BinarySearchTree<K, V>::Successor(Node node)
 }
 
 template<class K, class V>
-void
+typename BinarySearchTree<K, V>::Node
 BinarySearchTree<K, V>::InsertNode(Node root, K key, V value)
 {
-  auto newNode = std::make_shared<BinarySearchTree<K, V>>(key, value);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
+  auto newNode = std::make_shared<BinarySearchTree<K, V>>(root);
+  newNode->setValues(key, value);
 
   BinarySearchTree<K, V>::Node newParent = nullptr;
   BinarySearchTree<K, V>::Node iter = root;
@@ -318,8 +343,15 @@ BinarySearchTree<K, V>::InsertNode(Node root, K key, V value)
 
     if (key < iter->key()) {
       iter = iter->left();
-    } else {
+    } else if (key > iter->key()) {
       iter = iter->right();
+    } else {
+      if (gen() % 255 < 127) { // assign randomly with
+                               // equal(?) probability
+        iter = iter->left();
+      } else {
+        iter = iter->right();
+      }
     }
   }
 
@@ -332,12 +364,17 @@ BinarySearchTree<K, V>::InsertNode(Node root, K key, V value)
   }
 
   BinarySearchTree<K, V>::_IncrementSize(newNode);
+
+  return newNode;
 }
 
 template<class K, class V>
-void
+typename BinarySearchTree<K, V>::Node
 BinarySearchTree<K, V>::InsertNode(Node root, Node node)
 {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
   BinarySearchTree<K, V>::Node newParent = nullptr;
   BinarySearchTree<K, V>::Node iter = root;
 
@@ -346,8 +383,15 @@ BinarySearchTree<K, V>::InsertNode(Node root, Node node)
 
     if (node->key() < iter->key()) {
       iter = iter->left();
-    } else {
+    } else if (node->key() > iter->key()) {
       iter = iter->right();
+    } else {
+      if (gen() % 255 < 127) { // assign randomly with
+                               // equal(?) probability
+        iter = iter->left();
+      } else {
+        iter = iter->right();
+      }
     }
   }
 
@@ -360,28 +404,52 @@ BinarySearchTree<K, V>::InsertNode(Node root, Node node)
   }
 
   BinarySearchTree<K, V>::_IncrementSize(node);
+
+  return node;
 }
 
 template<class K, class V>
-void
+typename BinarySearchTree<K, V>::Node
 BinarySearchTree<K, V>::DeleteNode(Node toDelete)
 {
+  auto deletedRoot = false;
   if (toDelete->left() == nullptr) {
-    BinarySearchTree<K, V>::_Transplant(toDelete, toDelete->right());
+
+    deletedRoot =
+      BinarySearchTree<K, V>::_Transplant(toDelete, toDelete->right());
+
     BinarySearchTree<K, V>::_DecrementSize(toDelete);
+
+    if (deletedRoot) {
+      return toDelete->right();
+    }
   } else if (toDelete->right() == nullptr) {
-    BinarySearchTree<K, V>::_Transplant(toDelete, toDelete->left());
+
+    deletedRoot =
+      BinarySearchTree<K, V>::_Transplant(toDelete, toDelete->left());
+
     BinarySearchTree<K, V>::_DecrementSize(toDelete);
+
+    if (deletedRoot) {
+      return toDelete->left();
+    }
   } else {
     auto pred = BinarySearchTree<K, V>::Predecessor(toDelete);
+
     toDelete->setValues(pred->key(), pred->value());
-    BinarySearchTree<K, V>::_Transplant(pred, pred->left());
+
+    deletedRoot = BinarySearchTree<K, V>::_Transplant(pred, pred->left());
+
     BinarySearchTree<K, V>::_DecrementSize(pred);
+
+    return toDelete;
   }
+
+  return toDelete;
 }
 
 template<class K, class V>
-void
+bool
 BinarySearchTree<K, V>::_Transplant(Node node, Node transplantWith)
 {
   if (node != nullptr) {
@@ -398,9 +466,12 @@ BinarySearchTree<K, V>::_Transplant(Node node, Node transplantWith)
     } else {
       if (transplantWith != nullptr) {
         transplantWith->setParent(nullptr);
+        return true;
       }
     }
   }
+
+  return false;
 }
 
 template<class K, class V>
@@ -462,7 +533,7 @@ int
 BinarySearchTree<K, V>::Rank(Node root, Node node)
 {
   if (root != nullptr && node != nullptr &&
-      root->search(node->key()) != nullptr) {
+      BinarySearchTree<K, V>::Search(root, node->key()) != nullptr) {
     return BinarySearchTree<K, V>::_Rank(root, node->key());
   }
   return -1;
@@ -472,7 +543,7 @@ template<class K, class V>
 int
 BinarySearchTree<K, V>::Rank(Node root, K key)
 {
-  if (root != nullptr && root->search(key) != nullptr) {
+  if (root != nullptr && BinarySearchTree<K, V>::Search(root, key) != nullptr) {
     return BinarySearchTree<K, V>::_Rank(root, key);
   }
 
